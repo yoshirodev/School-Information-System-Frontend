@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import Navbar from "../../components/Navbar";
 import bgmain from "../../assets/bgmain.png";
 import tLogo from "../../assets/t_logo.png";
 import nontLogo from "../../assets/nont_logo.png";
@@ -40,6 +41,9 @@ export default function PortalLogin({ onLogin }) {
     return (
         <div className="relative min-h-screen w-full overflow-x-hidden bg-white">
 
+            {/* Reusable Navbar */}
+            <Navbar logo={nontLogo} purpose="Student Portal" />
+            
             {/* Background Image */}
             <div className="absolute inset-x-0 top-[109px] bottom-0 overflow-hidden">
                 <img
@@ -49,67 +53,10 @@ export default function PortalLogin({ onLogin }) {
                 />
             </div>
 
-            {/* Navigation Bar */}
-            <header className="relative z-20 flex min-h-[109px] w-full flex-wrap items-center justify-between gap-4 bg-[#2B75D8] px-6 py-4 md:h-[109px] md:flex-nowrap md:px-[34px] md:py-[17px]">
-
-                {/* School Logo and Name */}
-                <div className="flex items-center gap-3">
-                    <img
-                        src={nontLogo}
-                        alt="MMNHS Logo"
-                        className="h-[65px] w-[65px] shrink-0 object-contain md:h-[75px] md:w-[75px]"
-                    />
-
-                    <p className="max-w-[430px] text-sm font-medium leading-6 text-white md:text-base">
-                        Medroso-Mendoza National High School Student Enrollment Portal
-                    </p>
-                </div>
-
-                {/* Navigation Links */}
-                <nav className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-[#F3F4F6] md:gap-x-7 md:text-base">
-
-                    <Link
-                        to="/enroll"
-                        className="transition-colors hover:text-blue-200"
-                    >
-                        Admission
-                    </Link>
-
-                    <a
-                        href="#programs"
-                        className="transition-colors hover:text-blue-200"
-                    >
-                        Programs
-                    </a>
-
-                    <a
-                        href="#blog"
-                        className="transition-colors hover:text-blue-200"
-                    >
-                        MMNHS Blog
-                    </a>
-
-                    <a
-                        href="#about"
-                        className="transition-colors hover:text-blue-200"
-                    >
-                        About MMNHS
-                    </a>
-
-                    <Link
-                        to="/login"
-                        className="font-semibold text-white transition-colors hover:text-blue-200"
-                    >
-                        Portal
-                    </Link>
-
-                </nav>
-            </header>
-
             {/* Login Card Container */}
-            <main className="relative z-10 flex w-full justify-center px-4 pb-12 pt-[65px]">
+            <main className="relative z-10 flex justify-center px-4 pt-44 pb-12">
 
-                <div className="w-full max-w-[638px] overflow-hidden rounded-[10px] bg-white shadow-lg">
+                <div className="w-full max-w-[638px] min-h-[632px] overflow-hidden rounded-[10px] bg-white shadow-lg">
 
                     {/* Card Header */}
                     <div className="relative flex min-h-[86px] items-center justify-center gap-4 bg-[rgba(43,117,216,0.25)] px-4 py-3">
