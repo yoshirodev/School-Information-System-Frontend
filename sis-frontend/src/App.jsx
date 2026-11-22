@@ -5,6 +5,7 @@ import PortalLogin from "./pages/portal/PortalLogin";
 import EnrollRegis from "./pages/enrollment/EnrollRegis";
 import EnrollmentMain from "./pages/enrollment/EnrollmentMain";
 import StudentHome from "./pages/portal/student/Portal_Student_Home";
+import StudentProfile from "./pages/portal/student/Portal_Student_Profile";
 
 
 function App() {
@@ -15,7 +16,10 @@ function App() {
                 <Route path="/login" element={<PortalLogin />} />
                 <Route path="/enroll" element={<EnrollRegis />} />
                 <Route path="/enrollment-main" element={<EnrollmentMain />} />
-               <Route path="/Portal_Student_Home" element={<StudentHome />}
+
+                <Route path="/Portal_Student_Home" element={<StudentHome />} />
+                <Route path="/Portal_Student_Profile" element={<StudentProfile />}
+
 />
             </Routes>
         </BrowserRouter>

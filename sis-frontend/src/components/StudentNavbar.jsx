@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Home,
   UserRound,
@@ -16,24 +17,24 @@ import "../styles/Portal_Student_Home.css";
 import schoolLogo from "../assets/t_logo.png";
 
 const navigationItems = [
-  { label: "Home", page: "home", icon: Home },
-  { label: "Profile", page: "profile", icon: UserRound },
-  { label: "Subjects", page: "subjects", icon: BookOpen },
-  { label: "Grades", page: "grades", icon: ClipboardPenLine },
-  { label: "Clearance", page: "clearance", icon: FileText },
-  { label: "Request", page: "request", icon: FileOutput },
+  { label: "Home", page: "home", path: "/Portal_Student_Home", icon: Home },
+  { label: "Profile", page: "profile", path: "/Portal_Student_Profile", icon: UserRound },
+  { label: "Subjects", page: "subjects", path: "/Portal_Student_Subjects", icon: BookOpen },
+  { label: "Grades", page: "grades", path: "/Portal_Student_Grades", icon: ClipboardPenLine },
+  { label: "Clearance", page: "clearance", path: "/Portal_Student_Clearance", icon: FileText },
+  { label: "Request", page: "request", path: "/Portal_Student_Request", icon: FileOutput },
 ];
 
 export default function StudentNavbar({
   activePage = "home",
-  onNavigate,
   onLogout,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const navigate = (page) => {
+  const handleNavigation = (path) => {
     setMenuOpen(false);
-    onNavigate?.(page);
+    navigate(path);
   };
 
   const logout = () => {
@@ -65,14 +66,14 @@ export default function StudentNavbar({
           className="sidebar-navigation"
           aria-label="Student navigation"
         >
-          {navigationItems.map(({ label, page, icon: Icon }) => (
+          {navigationItems.map(({ label, page, path, icon: Icon }) => (
             <button
               key={page}
               type="button"
               className={`sidebar-link ${
                 activePage === page ? "sidebar-link--active" : ""
               }`}
-              onClick={() => navigate(page)}
+              onClick={() => handleNavigation(path)}
               aria-current={
                 activePage === page ? "page" : undefined
               }
@@ -105,7 +106,7 @@ export default function StudentNavbar({
       <button
         className="mobile-menu-button"
         type="button"
-        onClick={() => setMenuOpen(true)}
+        onClick={() => setMenuOpen((prev) => !prev)}
       >
         {menuOpen ? <X size={19} /> : <Menu size={19} />}
         Menu
