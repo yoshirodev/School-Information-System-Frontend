@@ -19,7 +19,6 @@ import {
 import "../../../styles/Portal_Student_Home.css";
 import schoolLogo from "../../../assets/t_logo.png";
 
-
 const navigationItems = [
   { label: "Home", page: "home", icon: Home },
   { label: "Profile", page: "profile", icon: UserRound },
@@ -102,7 +101,7 @@ export default function StudentHome({
   const [selectedType, setSelectedType] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const studentInfo = {...student };
+  const studentInfo = { ...defaultStudent, ...student };
   const displayValue = (value) => value || "Not available";
   const firstName = studentInfo.fullName?.trim().split(/\s+/)[0] || "Student";
   const announcementList = Array.isArray(announcements) ? announcements : [];
@@ -140,7 +139,7 @@ export default function StudentHome({
     <div className="student-portal">
       <aside className={`student-sidebar ${menuOpen ? "student-sidebar--open" : ""}`}>
         <div className="sidebar-brand">
-          <img src={schoolLogo} className="school-logo" />
+          <img src={schoolLogo} alt="School logo" className="school-logo" />
           <div className="sidebar-brand-text">
             <strong>MMNHS PORTAL</strong>
             <span>Student Portal</span>
