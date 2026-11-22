@@ -25,6 +25,15 @@ export default function EnrollmentMain() {
         sex: "",
         birthday: "",
         placeOfBirth: "",
+
+        // Step 4: Address Details
+        houseNoStreet: "",
+        sitioStreet: "",
+        zipCode: "",
+        barangay: "",
+        province: "",
+        municipalityCity: "",
+        country: "",
     });
 
     const [errors, setErrors] = useState({});
@@ -127,6 +136,44 @@ export default function EnrollmentMain() {
         return Object.keys(newErrors).length === 0;
     };
 
+    const validateAddressInfo = () => {
+        const newErrors = {};
+
+        if (!formData.houseNoStreet.trim()) {
+            newErrors.houseNoStreet = "House number / street is required.";
+        }
+
+        if (!formData.sitioStreet.trim()) {
+            newErrors.sitioStreet = "Sitio / street name is required.";
+        }
+
+        if (!formData.zipCode.trim()) {
+            newErrors.zipCode = "ZIP code is required.";
+        } else if (!/^\d{4}$/.test(formData.zipCode)) {
+            newErrors.zipCode = "Please enter a valid 4-digit ZIP code.";
+        }
+
+        if (!formData.barangay.trim()) {
+            newErrors.barangay = "Barangay is required.";
+        }
+
+        if (!formData.province.trim()) {
+            newErrors.province = "Province is required.";
+        }
+
+        if (!formData.municipalityCity.trim()) {
+            newErrors.municipalityCity = "Municipality / City is required.";
+        }
+
+        if (!formData.country.trim()) {
+            newErrors.country = "Country is required.";
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
     // Next button
     const handleNext = (e) => {
         e.preventDefault();
@@ -144,8 +191,14 @@ export default function EnrollmentMain() {
                 break;
             case 3:
                 if (!validateBirthInfo()) return;
-                //setCurrentStep(4);
+                setCurrentStep(4);
                 window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 4:
+                if (!validateAddressInfo()) return;
+                //setCurrentStep(5);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
             default:
                 break;
         }
@@ -168,6 +221,11 @@ export default function EnrollmentMain() {
             case 3:
                 setCurrentStep(2);
                 window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 4:
+                setCurrentStep(3);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
             default:
                 break;
         }
@@ -201,6 +259,7 @@ export default function EnrollmentMain() {
         return age >= 0 ? age : "";
     };
 
+    // porgress calculation for the progress bar, since the first 3 steps are considered as one step in the progress bar
     const progressStep = currentStep <= 3 ? 1 : currentStep - 2;
     
     return (
@@ -272,7 +331,7 @@ export default function EnrollmentMain() {
             </div>
 
             {/* ==============================
-                SCREEN 1: LRN AND GRADE LEVEL
+                SCREEN 1: PART 1 LRN AND GRADE LEVEL
             ============================== */}
 
             {currentStep === 1 && (
@@ -416,7 +475,7 @@ export default function EnrollmentMain() {
             )}
 
             {/* ==============================
-                SCREEN 2: NAME INFORMATION
+                SCREEN 2: PART 1 NAME INFORMATION
             ============================== */}
 
             {currentStep === 2 && (
@@ -605,7 +664,7 @@ export default function EnrollmentMain() {
             )}
 
             {/* ==============================
-                SCREEN 3: BACKGROUND INFORMATION
+                SCREEN 3: PART 1 BACKGROUND INFORMATION
             ============================== */}
 
             {currentStep === 3 && (
@@ -819,7 +878,304 @@ export default function EnrollmentMain() {
             )}
 
             
+            {/* ==============================
+                SCREEN 4: ADDRESS INFORMATION
+            ============================== */}
 
+            {currentStep === 4 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[639px] px-5 sm:px-8 py-[26px]">
+
+                        {/* Heading */}
+                        <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold leading-9 mb-8">
+                            Learner Information II - Address
+
+                            <span className="block text-base sm:text-lg font-normal">
+                                Please provide your personal details as they appear on your official documents.
+                            </span>
+                        </h1>
+
+                        {/* Address Form Box */}
+                        <div className="w-full max-w-[1000px] mx-auto border border-[#2B75D8] rounded-[15px] overflow-hidden">
+
+                            {/* Section Header */}
+                            <div className="bg-[rgba(43,117,216,0.25)] px-6 py-5 min-h-[86px] flex items-center">
+                                <h2 className="text-[#2B75D8] font-poppins text-2xl sm:text-3xl font-bold">
+                                    Address
+                                </h2>
+                            </div>
+
+                            {/* Address Fields */}
+                            <form
+                                onSubmit={handleNext}
+                                noValidate
+                                className="p-6 sm:p-10"
+                            >
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-7 gap-y-6">
+
+                                    {/* House No. / Street */}
+                                    <div>
+                                        <label
+                                            htmlFor="houseNoStreet"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                        >
+                                            House No. / Street
+                                        </label>
+
+                                        <input
+                                            id="houseNoStreet"
+                                            type="text"
+                                            value={formData.houseNoStreet}
+                                            onChange={(e) =>
+                                                updateField("houseNoStreet", e.target.value)
+                                            }
+                                            placeholder="Enter house no. / street"
+                                            aria-invalid={!!errors.houseNoStreet}
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+
+                                        {errors.houseNoStreet && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {errors.houseNoStreet}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Sitio / Street Name */}
+                                    <div>
+                                        <label
+                                            htmlFor="sitioStreet"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                        >
+                                            Sitio / Street Name
+                                        </label>
+
+                                        <input
+                                            id="sitioStreet"
+                                            type="text"
+                                            value={formData.sitioStreet}
+                                            onChange={(e) =>
+                                                updateField("sitioStreet", e.target.value)
+                                            }
+                                            placeholder="Enter sitio / street name"
+                                            aria-invalid={!!errors.sitioStreet}
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+
+                                        {errors.sitioStreet && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {errors.sitioStreet}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* ZIP Code */}
+                                    <div>
+                                        <label
+                                            htmlFor="zipCode"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                        >
+                                            ZIP Code
+                                        </label>
+
+                                        <input
+                                            id="zipCode"
+                                            type="text"
+                                            inputMode="numeric"
+                                            maxLength={4}
+                                            value={formData.zipCode}
+                                            onChange={(e) =>
+                                                updateField(
+                                                    "zipCode",
+                                                    e.target.value.replace(/\D/g, "").slice(0, 4)
+                                                )
+                                            }
+                                            placeholder="Enter ZIP code"
+                                            aria-invalid={!!errors.zipCode}
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+
+                                        {errors.zipCode && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {errors.zipCode}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Barangay */}
+                                    <div>
+                                        <label
+                                            htmlFor="barangay"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                        >
+                                            Barangay
+                                        </label>
+
+                                        <input
+                                            id="barangay"
+                                            type="text"
+                                            value={formData.barangay}
+                                            onChange={(e) =>
+                                                updateField("barangay", e.target.value)
+                                            }
+                                            placeholder="Enter barangay"
+                                            aria-invalid={!!errors.barangay}
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+
+                                        {errors.barangay && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {errors.barangay}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Province */}
+                                    <div className="sm:col-span-1 lg:col-span-2">
+                                        <label
+                                            htmlFor="province"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                        >
+                                            Province
+                                        </label>
+
+                                        <input
+                                            id="province"
+                                            type="text"
+                                            value={formData.province}
+                                            onChange={(e) =>
+                                                updateField("province", e.target.value)
+                                            }
+                                            placeholder="Enter province"
+                                            aria-invalid={!!errors.province}
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+
+                                        {errors.province && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {errors.province}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Municipality / City */}
+                                    <div>
+                                        <label
+                                            htmlFor="municipalityCity"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                        >
+                                            Municipality / City
+                                        </label>
+
+                                        <input
+                                            id="municipalityCity"
+                                            type="text"
+                                            value={formData.municipalityCity}
+                                            onChange={(e) =>
+                                                updateField("municipalityCity", e.target.value)
+                                            }
+                                            placeholder="Enter municipality / city"
+                                            aria-invalid={!!errors.municipalityCity}
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+
+                                        {errors.municipalityCity && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {errors.municipalityCity}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Country */}
+                                    <div className="sm:col-span-1 lg:col-span-2">
+                                        <label
+                                            htmlFor="country"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                        >
+                                            Country
+                                        </label>
+
+                                        <input
+                                            id="country"
+                                            type="text"
+                                            value={formData.country}
+                                            onChange={(e) =>
+                                                updateField("country", e.target.value)
+                                            }
+                                            placeholder="Enter country"
+                                            aria-invalid={!!errors.country}
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+
+                                        {errors.country && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {errors.country}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                </div>
+
+                                {/* Status */}
+                                {status && (
+                                    <p
+                                        role="status"
+                                        className="text-center text-sm text-[#2B75D8] mt-5"
+                                    >
+                                        {status}
+                                    </p>
+                                )}
+
+                                {/* Navigation Buttons */}
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                                    {/* Back */}
+                                    <button
+                                        type="button"
+                                        onClick={handleBack}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                                    >
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M17 8H1M8 1L1 8L8 15"
+                                                stroke="#2B75D8"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                        Back
+                                    </button>
+
+                                    {/* Next */}
+                                    <button
+                                        type="submit"
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                                    >
+                                        Next
+
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M1 8H17M10 1L17 8L10 15"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            )}
+
+            
         </div>
     );
 }
