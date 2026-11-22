@@ -34,6 +34,52 @@ export default function EnrollmentMain() {
         province: "",
         municipalityCity: "",
         country: "",
+
+        // Step 5: Parent / Guardian Information
+        fatherLastName: "",
+        fatherFirstName: "",
+        fatherMiddleName: "",
+        fatherContactNumber: "",
+        fatherDeceased: false,
+
+        motherLastName: "",
+        motherFirstName: "",
+        motherMiddleName: "",
+        motherContactNumber: "",
+        motherDeceased: false,
+
+        guardianLastName: "",
+        guardianFirstName: "",
+        guardianMiddleName: "",
+        guardianContactNumber: "",
+        guardianDeceased: false,
+
+        // Father's Address
+        fatherHouseNoStreet: "",
+        fatherSitioStreet: "",
+        fatherZipCode: "",
+        fatherBarangay: "",
+        fatherProvince: "",
+        fatherMunicipalityCity: "",
+        fatherCountry: "",
+
+        // Mother's Address
+        motherHouseNoStreet: "",
+        motherSitioStreet: "",
+        motherZipCode: "",
+        motherBarangay: "",
+        motherProvince: "",
+        motherMunicipalityCity: "",
+        motherCountry: "",
+
+        // Legal Guardian's Address (Optional)
+        guardianHouseNoStreet: "",
+        guardianSitioStreet: "",
+        guardianZipCode: "",
+        guardianBarangay: "",
+        guardianProvince: "",
+        guardianMunicipalityCity: "",
+        guardianCountry: "",
     });
 
     const [errors, setErrors] = useState({});
@@ -174,6 +220,107 @@ export default function EnrollmentMain() {
         return Object.keys(newErrors).length === 0;
     };
 
+    const validateGuardianInfo = () => {
+        const newErrors = {};
+
+        const guardians = [
+            {
+                prefix: "father",
+                label: "Father",
+            },
+            {
+                prefix: "mother",
+                label: "Mother",
+            },
+            {
+                prefix: "guardian",
+                label: "Legal Guardian",
+            },
+        ];
+
+        guardians.forEach(({ prefix, label }) => {
+            if (!formData[`${prefix}LastName`].trim()) {
+                newErrors[`${prefix}LastName`] = `${label}'s last name is required.`;
+            }
+
+            if (!formData[`${prefix}FirstName`].trim()) {
+                newErrors[`${prefix}FirstName`] = `${label}'s first name is required.`;
+            }
+
+            if (!formData[`${prefix}ContactNumber`].trim()) {
+                newErrors[`${prefix}ContactNumber`] = `${label}'s contact number is required.`;
+            } else if (
+                !/^[0-9+\-\s()]{7,20}$/.test(
+                    formData[`${prefix}ContactNumber`].trim()
+                )
+            ) {
+                newErrors[`${prefix}ContactNumber`] = "Please enter a valid contact number.";
+            }
+        });
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const validateFatherAddress = () => {
+        const newErrors = {};
+
+        const requiredFields = {
+            fatherHouseNoStreet: "House No. / Street",
+            fatherSitioStreet: "Sitio / Street Name",
+            fatherZipCode: "ZIP Code",
+            fatherBarangay: "Barangay",
+            fatherProvince: "Province",
+            fatherMunicipalityCity: "Municipality / City",
+            fatherCountry: "Country",
+        };
+
+        Object.entries(requiredFields).forEach(([field, label]) => {
+            if (!formData[field]?.trim()) {
+            newErrors[field] = `${label} is required.`;
+            }
+        });
+
+        setErrors((prev) => ({
+            ...prev,
+            ...newErrors,
+        }));
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const validateMotherAddress = () => {
+        const newErrors = {};
+
+        const requiredFields = {
+            motherHouseNoStreet: "House No. / Street",
+            motherSitioStreet: "Sitio / Street Name",
+            motherZipCode: "ZIP Code",
+            motherBarangay: "Barangay",
+            motherProvince: "Province",
+            motherMunicipalityCity: "Municipality / City",
+            motherCountry: "Country",
+        };
+
+        Object.entries(requiredFields).forEach(([field, label]) => {
+            if (!formData[field]?.trim()) {
+                newErrors[field] = `${label} is required.`;
+            }
+        });
+
+        if (
+            formData.motherZipCode.trim() &&
+            !/^\d{4}$/.test(formData.motherZipCode)
+        ) {
+            newErrors.motherZipCode = "Please enter a valid 4-digit ZIP code.";
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
     // Next button
     const handleNext = (e) => {
         e.preventDefault();
@@ -196,7 +343,26 @@ export default function EnrollmentMain() {
                 break;
             case 4:
                 if (!validateAddressInfo()) return;
-                //setCurrentStep(5);
+                setCurrentStep(5);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 5:
+                if (!validateGuardianInfo()) return;
+                setCurrentStep(6);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 6:
+                if (!validateFatherAddress()) return;
+                setCurrentStep(7);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 7:
+                if (!validateMotherAddress()) return;
+                setCurrentStep(8);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 8:
+                setCurrentStep(8);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             default:
@@ -224,6 +390,22 @@ export default function EnrollmentMain() {
                 break;
             case 4:
                 setCurrentStep(3);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 5:
+                setCurrentStep(4);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 6:
+                setCurrentStep(5);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 7:
+                setCurrentStep(6);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 8:
+                setCurrentStep(7);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             default:
@@ -260,7 +442,10 @@ export default function EnrollmentMain() {
     };
 
     // porgress calculation for the progress bar, since the first 3 steps are considered as one step in the progress bar
-    const progressStep = currentStep <= 3 ? 1 : currentStep - 2;
+    const progressStep =
+        currentStep <= 3 ? 1 :
+        currentStep === 4 ? 2 :
+        currentStep <= 8 ? 3 : 4;
     
     return (
         <div className="relative bg-white min-h-screen w-full overflow-x-hidden">
@@ -879,7 +1064,7 @@ export default function EnrollmentMain() {
 
             
             {/* ==============================
-                SCREEN 4: ADDRESS INFORMATION
+                SCREEN 4: PART 2 ADDRESS INFORMATION
             ============================== */}
 
             {currentStep === 4 && (
@@ -1175,7 +1360,745 @@ export default function EnrollmentMain() {
                 </main>
             )}
 
+            {/* ==============================
+                SCREEN 5: PART 3 PARENT / GUARDIAN INFORMATION
+            ============================== */}
+
+            {currentStep === 5 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[639px] px-5 sm:px-8 py-[26px]">
+
+                        {/* Heading */}
+                        <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold leading-9 mb-8">
+                            Learner Information III - Guardian Information
+
+                            <span className="block text-base sm:text-lg font-normal">
+                                Please provide your parent's or guardian's information as it appears on their official documents.
+                            </span>
+                        </h1>
+
+                        {/* Guardian Form Box */}
+                        <div className="w-full max-w-[1285px] mx-auto border border-[#2B75D8] rounded-[15px] overflow-hidden">
+
+                            {/* Section Header */}
+                            <div className="bg-[rgba(43,117,216,0.25)] px-6 py-5 min-h-[86px] flex items-center">
+                                <h2 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-bold">
+                                    Parent's/Guardian's Information
+                                </h2>
+                            </div>
+
+                            <form
+                                onSubmit={handleNext}
+                                noValidate
+                                className="p-6 sm:p-8 lg:p-10"
+                            >
+
+                                {[
+                                    {
+                                        title: "Fathers Name",
+                                        prefix: "father",
+                                    },
+                                    {
+                                        title: "Mothers Name",
+                                        prefix: "mother",
+                                    },
+                                    {
+                                        title: "Legal Guardian's Name (if applicable)",
+                                        prefix: "guardian",
+                                    },
+                                ].map((person) => (
+                                    <section
+                                        key={person.prefix}
+                                        className="mb-9 last:mb-0"
+                                    >
+
+                                        {/* Person heading and deceased checkbox */}
+                                        <div className="flex flex-wrap items-center gap-4 mb-4">
+
+                                            <h3 className="text-[#2B75D8] font-poppins text-[15px] font-bold">
+                                                {person.title}
+                                            </h3>
+
+                                            <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData[`${person.prefix}Deceased`]}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            `${person.prefix}Deceased`,
+                                                            e.target.checked
+                                                        )
+                                                    }
+                                                    className="w-4 h-4 accent-[#2B75D8] cursor-pointer"
+                                                />
+
+                                                Deceased
+                                            </label>
+
+                                        </div>
+
+                                        {/* Input Fields */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
+
+                                            {/* Last Name */}
+                                            <div>
+                                                <label
+                                                    htmlFor={`${person.prefix}LastName`}
+                                                    className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                                >
+                                                    Last Name *
+                                                </label>
+
+                                                <input
+                                                    id={`${person.prefix}LastName`}
+                                                    type="text"
+                                                    value={formData[`${person.prefix}LastName`]}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            `${person.prefix}LastName`,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder="Enter last name"
+                                                    aria-invalid={!!errors[`${person.prefix}LastName`]}
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                />
+
+                                                {errors[`${person.prefix}LastName`] && (
+                                                    <p className="text-red-500 text-xs mt-1">
+                                                        {errors[`${person.prefix}LastName`]}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* First Name */}
+                                            <div>
+                                                <label
+                                                    htmlFor={`${person.prefix}FirstName`}
+                                                    className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                                >
+                                                    First Name *
+                                                </label>
+
+                                                <input
+                                                    id={`${person.prefix}FirstName`}
+                                                    type="text"
+                                                    value={formData[`${person.prefix}FirstName`]}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            `${person.prefix}FirstName`,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder="Enter first name"
+                                                    aria-invalid={!!errors[`${person.prefix}FirstName`]}
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                />
+
+                                                {errors[`${person.prefix}FirstName`] && (
+                                                    <p className="text-red-500 text-xs mt-1">
+                                                        {errors[`${person.prefix}FirstName`]}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* Middle Name */}
+                                            <div>
+                                                <label
+                                                    htmlFor={`${person.prefix}MiddleName`}
+                                                    className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                                >
+                                                    Middle Name
+                                                </label>
+
+                                                <input
+                                                    id={`${person.prefix}MiddleName`}
+                                                    type="text"
+                                                    value={formData[`${person.prefix}MiddleName`]}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            `${person.prefix}MiddleName`,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder="Enter middle name"
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                />
+                                            </div>
+
+                                            {/* Contact Number */}
+                                            <div>
+                                                <label
+                                                    htmlFor={`${person.prefix}ContactNumber`}
+                                                    className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                                >
+                                                    Contact Number *
+                                                </label>
+
+                                                <input
+                                                    id={`${person.prefix}ContactNumber`}
+                                                    type="tel"
+                                                    inputMode="tel"
+                                                    value={formData[`${person.prefix}ContactNumber`]}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            `${person.prefix}ContactNumber`,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder="Enter contact number"
+                                                    aria-invalid={!!errors[`${person.prefix}ContactNumber`]}
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                />
+
+                                                {errors[`${person.prefix}ContactNumber`] && (
+                                                    <p className="text-red-500 text-xs mt-1">
+                                                        {errors[`${person.prefix}ContactNumber`]}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                        </div>
+
+                                    </section>
+                                ))}
+
+                                {/* Status */}
+                                {status && (
+                                    <p
+                                        role="status"
+                                        className="text-center text-sm text-[#2B75D8] mt-5"
+                                    >
+                                        {status}
+                                    </p>
+                                )}
+
+                                {/* Navigation Buttons */}
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                                    {/* Back */}
+                                    <button
+                                        type="button"
+                                        onClick={handleBack}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                                    >
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M17 8H1M8 1L1 8L8 15"
+                                                stroke="#2B75D8"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+
+                                        Back
+                                    </button>
+
+                                    {/* Next */}
+                                    <button
+                                        type="submit"
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                                    >
+                                        Next
+
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M1 8H17M10 1L17 8L10 15"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 6: PART 3 PARENT / GUARDIAN ADDRESS INFORMATION
+            ============================== */}
+
+            {currentStep === 6 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[639px] px-5 sm:px-8 py-[26px]">
+
+                        {/* Heading */}
+                        <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold leading-9 mb-8">
+                            Learner Information III - Guardian Information
+
+                            <span className="block text-base sm:text-lg font-normal">
+                                Please provide the father's complete address information.
+                            </span>
+                        </h1>
+
+                        {/* Father's Address Form Box */}
+                        <div className="w-full max-w-[1000px] mx-auto border border-[#2B75D8] rounded-[15px] overflow-hidden">
+
+                            {/* Section Header */}
+                            <div className="bg-[rgba(43,117,216,0.25)] px-6 py-5 min-h-[86px] flex items-center">
+                                <h2 className="text-[#2B75D8] font-poppins text-2xl sm:text-3xl font-bold">
+                                    Father's Address
+                                </h2>
+                            </div>
+
+                            {/* Address Fields */}
+                            <form
+                                onSubmit={handleNext}
+                                noValidate
+                                className="p-6 sm:p-10"
+                            >
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-7 gap-y-6">
+
+                                    {[
+                                        {
+                                            name: "fatherHouseNoStreet",
+                                            label: "House No. / Street",
+                                            placeholder: "Enter house no. / street",
+                                        },
+                                        {
+                                            name: "fatherSitioStreet",
+                                            label: "Sitio / Street Name",
+                                            placeholder: "Enter sitio / street name",
+                                        },
+                                        {
+                                            name: "fatherZipCode",
+                                            label: "ZIP Code",
+                                            placeholder: "Enter ZIP code",
+                                        },
+                                        {
+                                            name: "fatherBarangay",
+                                            label: "Barangay",
+                                            placeholder: "Enter barangay",
+                                        },
+                                        {
+                                            name: "fatherProvince",
+                                            label: "Province",
+                                            placeholder: "Enter province",
+                                            className: "sm:col-span-1 lg:col-span-2",
+                                        },
+                                        {
+                                            name: "fatherMunicipalityCity",
+                                            label: "Municipality / City",
+                                            placeholder: "Enter municipality / city",
+                                        },
+                                        {
+                                            name: "fatherCountry",
+                                            label: "Country",
+                                            placeholder: "Enter country",
+                                            className: "sm:col-span-1 lg:col-span-2",
+                                        },
+                                    ].map((field) => (
+                                        <div
+                                            key={field.name}
+                                            className={field.className || ""}
+                                        >
+                                            <label
+                                                htmlFor={field.name}
+                                                className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                            >
+                                                {field.label}
+                                            </label>
+
+                                            <input
+                                                id={field.name}
+                                                name={field.name}
+                                                type="text"
+                                                value={formData[field.name] || ""}
+                                                onChange={(e) =>
+                                                    updateField(field.name, e.target.value)
+                                                }
+                                                placeholder={field.placeholder}
+                                                aria-invalid={!!errors[field.name]}
+                                                className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                    errors[field.name]
+                                                        ? "border-red-500"
+                                                        : "border-[#2B75D8]"
+                                                }`}
+                                            />
+
+                                            {errors[field.name] && (
+                                                <p className="text-red-500 text-sm mt-1">
+                                                    {errors[field.name]}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
+
+                                </div>
+
+                                {/* Status */}
+                                {status && (
+                                    <p
+                                        role="status"
+                                        className="text-center text-sm text-[#2B75D8] mt-5"
+                                    >
+                                        {status}
+                                    </p>
+                                )}
+
+                                {/* Navigation Buttons */}
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                                    {/* Back */}
+                                    <button
+                                        type="button"
+                                        onClick={handleBack}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                                    >
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M17 8H1M8 1L1 8L8 15"
+                                                stroke="#2B75D8"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                        Back
+                                    </button>
+
+                                    {/* Next */}
+                                    <button
+                                        type="submit"
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                                    >
+                                        Next
+
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M1 8H17M10 1L17 8L10 15"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 7: PART 3 PARENT / GUARDIAN ADDRESS INFORMATION
+            ============================== */}
+
+            {currentStep === 7 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[639px] px-5 sm:px-8 py-[26px]">
+
+                        {/* Heading */}
+                        <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold leading-9 mb-8">
+                            Learner Information III - Guardian Information
+
+                            <span className="block text-base sm:text-lg font-normal">
+                                Please provide the mother's complete address information.
+                            </span>
+                        </h1>
+
+                        {/* Mother's Address Form Box */}
+                        <div className="w-full max-w-[1000px] mx-auto border border-[#2B75D8] rounded-[15px] overflow-hidden">
+
+                            {/* Section Header */}
+                            <div className="bg-[rgba(43,117,216,0.25)] px-6 py-5 min-h-[86px] flex items-center">
+                                <h2 className="text-[#2B75D8] font-poppins text-2xl sm:text-3xl font-bold">
+                                    Mother's Address
+                                </h2>
+                            </div>
+
+                            <form onSubmit={handleNext} noValidate className="p-6 sm:p-10">
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-7 gap-y-6">
+                                    {[
+                                        {
+                                            name: "motherHouseNoStreet",
+                                            label: "House No. / Street",
+                                            placeholder: "Enter house no. / street",
+                                        },
+                                        {
+                                            name: "motherSitioStreet",
+                                            label: "Sitio / Street Name",
+                                            placeholder: "Enter sitio / street name",
+                                        },
+                                        {
+                                            name: "motherZipCode",
+                                            label: "ZIP Code",
+                                            placeholder: "Enter ZIP code",
+                                        },
+                                        {
+                                            name: "motherBarangay",
+                                            label: "Barangay",
+                                            placeholder: "Enter barangay",
+                                        },
+                                        {
+                                            name: "motherProvince",
+                                            label: "Province",
+                                            placeholder: "Enter province",
+                                            className: "sm:col-span-1 lg:col-span-2",
+                                        },
+                                        {
+                                            name: "motherMunicipalityCity",
+                                            label: "Municipality / City",
+                                            placeholder: "Enter municipality / city",
+                                        },
+                                        {
+                                            name: "motherCountry",
+                                            label: "Country",
+                                            placeholder: "Enter country",
+                                            className: "sm:col-span-1 lg:col-span-2",
+                                        },
+                                    ].map((field) => (
+                                        <div key={field.name} className={field.className || ""}>
+                                            <label
+                                                htmlFor={field.name}
+                                                className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                            >
+                                                {field.label}
+                                            </label>
+
+                                            <input
+                                                id={field.name}
+                                                name={field.name}
+                                                type="text"
+                                                value={formData[field.name] || ""}
+                                                onChange={(e) =>
+                                                    updateField(field.name, e.target.value)
+                                                }
+                                                placeholder={field.placeholder}
+                                                aria-invalid={!!errors[field.name]}
+                                                className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                    errors[field.name]
+                                                        ? "border-red-500"
+                                                        : "border-[#2B75D8]"
+                                                }`}
+                                            />
+
+                                            {errors[field.name] && (
+                                                <p className="text-red-500 text-sm mt-1">
+                                                    {errors[field.name]}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {status && (
+                                    <p role="status" className="text-center text-sm text-[#2B75D8] mt-5">
+                                        {status}
+                                    </p>
+                                )}
+
+                                {/* Navigation Buttons */}
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                                    <button
+                                        type="button"
+                                        onClick={handleBack}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                                    >
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M17 8H1M8 1L1 8L8 15"
+                                                stroke="#2B75D8"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                        Back
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                                    >
+                                        Next
+
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M1 8H17M10 1L17 8L10 15"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            )}
             
+            {/* ==============================
+                SCREEN 8: PART 3 PARENT / GUARDIAN ADDRESS INFORMATION
+            ============================== */}
+
+            {currentStep === 8 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[639px] px-5 sm:px-8 py-[26px]">
+
+                        {/* Heading */}
+                        <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold leading-9 mb-8">
+                            Learner Information III - Guardian Information
+
+                            <span className="block text-base sm:text-lg font-normal">
+                                Please provide the legal guardian's address information.
+                            </span>
+                        </h1>
+
+                        {/* Legal Guardian's Address */}
+                        <div className="w-full max-w-[1000px] mx-auto border border-[#2B75D8] rounded-[15px] overflow-hidden">
+
+                            {/* Section Header */}
+                            <div className="bg-[rgba(43,117,216,0.25)] px-6 py-5 min-h-[86px] flex items-center">
+                                <h2 className="text-[#2B75D8] font-poppins text-2xl sm:text-3xl font-bold">
+                                    Legal Guardian's Address
+                                </h2>
+                            </div>
+
+                            <form
+                                onSubmit={handleNext}
+                                noValidate
+                                className="p-6 sm:p-10"
+                            >
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-7 gap-y-6">
+
+                                    {[
+                                        {
+                                            name: "guardianHouseNoStreet",
+                                            label: "House No. / Street",
+                                            placeholder: "Enter house no. / street",
+                                        },
+                                        {
+                                            name: "guardianSitioStreet",
+                                            label: "Sitio / Street Name",
+                                            placeholder: "Enter sitio / street name",
+                                        },
+                                        {
+                                            name: "guardianZipCode",
+                                            label: "ZIP Code",
+                                            placeholder: "Enter ZIP code",
+                                        },
+                                        {
+                                            name: "guardianBarangay",
+                                            label: "Barangay",
+                                            placeholder: "Enter barangay",
+                                        },
+                                        {
+                                            name: "guardianProvince",
+                                            label: "Province",
+                                            placeholder: "Enter province",
+                                            className: "sm:col-span-1 lg:col-span-2",
+                                        },
+                                        {
+                                            name: "guardianMunicipalityCity",
+                                            label: "Municipality / City",
+                                            placeholder: "Enter municipality / city",
+                                        },
+                                        {
+                                            name: "guardianCountry",
+                                            label: "Country",
+                                            placeholder: "Enter country",
+                                            className: "sm:col-span-1 lg:col-span-2",
+                                        },
+                                    ].map((field) => (
+                                        <div
+                                            key={field.name}
+                                            className={field.className || ""}
+                                        >
+                                            <label
+                                                htmlFor={field.name}
+                                                className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
+                                            >
+                                                {field.label}
+                                            </label>
+
+                                            <input
+                                                id={field.name}
+                                                name={field.name}
+                                                type="text"
+                                                value={formData[field.name] || ""}
+                                                onChange={(e) =>
+                                                    updateField(field.name, e.target.value)
+                                                }
+                                                placeholder={field.placeholder}
+                                                className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                            />
+                                        </div>
+                                    ))}
+
+                                </div>
+
+                                {/* Navigation Buttons */}
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                                    {/* Back */}
+                                    <button
+                                        type="button"
+                                        onClick={handleBack}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                                    >
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M17 8H1M8 1L1 8L8 15"
+                                                stroke="#2B75D8"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                        Back
+                                    </button>
+
+                                    {/* Next */}
+                                    <button
+                                        type="submit"
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                                    >
+                                        Next
+
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M1 8H17M10 1L17 8L10 15"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 9: PART 3 PARENT / GUARDIAN ADDRESS INFORMATION
+            ============================== */}
+
+            
+
         </div>
     );
 }

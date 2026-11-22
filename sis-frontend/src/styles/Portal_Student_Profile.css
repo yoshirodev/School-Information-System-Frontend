@@ -1,0 +1,474 @@
+
+
+.student-profile-layout {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  background: #ffffff;
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+}
+
+.student-profile-main {
+  width: calc(100% - 180px);
+  min-width: 0;
+  min-height: 100vh;
+  margin-left: 180px;
+  padding: 74px 32px 40px 22px;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+
+.student-profile-header {
+  margin-bottom: 45px;
+  margin-left: 100px;
+}
+
+.student-profile-header h1 {
+  margin: 0;
+  color: #080808;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.student-profile-header p {
+  margin: 0;
+  color: #111111;
+  font-size: 17px;
+  font-weight: 400;
+}
+
+/* Personal Information Card */
+
+
+.student-personal-card {
+  width: 100%;
+  max-width: 945px;
+  min-height: 530px;
+  margin: 0 0 0 12px;
+  overflow: hidden;
+  border: 1px solid #7da9ed;
+  border-radius: 7px;
+  background: #ffffff;
+  box-sizing: border-box;
+  margin-left: 100px;
+}
+
+
+.student-personal-card-header {
+  height: 79px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2d75d9;
+}
+
+.student-personal-card-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 23px;
+  font-weight: 600;
+}
+
+.student-personal-card-body {
+  min-height: 248px;
+  display: flex;
+  align-items: center;
+  padding: 24px 28px 16px;
+}
+
+/* Avatar Section */
+
+.student-profile-avatar-section {
+  width: 197px;
+  min-width: 197px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  padding-right: 10px;
+}
+
+.student-profile-avatar {
+  width: 133px;
+  height: 133px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #b8b8b8;
+  color: #f5f5f5;
+}
+
+.student-profile-avatar svg {
+  width: 108px;
+  height: 108px;
+  margin-bottom: -1px;
+  fill: #f5f5f5;
+  stroke: #f5f5f5;
+}
+
+.student-profile-avatar-section h2 {
+  margin: 16px 0 0;
+  color: #050505;
+  font-size: 23px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Vertical Divider */
+
+.student-profile-divider {
+  width: 1px;
+  height: 207px;
+  flex-shrink: 0;
+  margin: 0 34px 0 0;
+  background: #8ab2f3;
+}
+
+/* Information Columns */
+
+.student-profile-information {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 25px;
+}
+
+.student-profile-info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.student-profile-info-item {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.student-profile-info-icon {
+  width: 88px;
+  height: 88px;
+  min-width: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #c2d8f7;
+  color: #0754a9;
+  align-items: center;
+  justify-content: center;
+}
+
+.student-profile-info-icon svg {
+  width: 59px;
+  height: 59px;
+  stroke-width: 1.9;
+  display: flex;
+}
+
+
+.student-profile-info-text {
+  min-width: 0;
+}
+
+.student-profile-info-text span {
+  display: block;
+  margin-bottom: 1px;
+  color: #111111;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.student-profile-info-text p {
+  margin: 0;
+  color: #111111;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* Edit Button */
+
+.student-profile-edit-button {
+  width: 200px;
+  height: 50px;
+  margin-top: 34px;
+  border: none;
+  border-radius: 5px;
+  background: #2d75d9;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-left: 100px;
+  font-size: 14px;
+}
+
+.student-profile-edit-button:hover {
+  background: #185ebd;
+}
+
+/* Edit Modal */
+
+.student-profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.student-profile-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 25px;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+}
+
+.student-profile-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.student-profile-modal-header h2 {
+  margin: 0;
+  color: #111111;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.student-profile-modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: #555555;
+  cursor: pointer;
+}
+
+.student-profile-modal-close:hover {
+  background: #eeeeee;
+}
+
+.student-profile-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.student-profile-form-group label {
+  color: #333333;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.student-profile-form-group input,
+.student-profile-form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  outline: none;
+  color: #222222;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.student-profile-form-group input:focus,
+.student-profile-form-group textarea:focus {
+  border-color: #2d75d9;
+}
+
+.student-profile-form-group textarea {
+  resize: vertical;
+}
+
+.student-profile-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.student-profile-cancel-button,
+.student-profile-save-button {
+  min-width: 105px;
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.student-profile-cancel-button {
+  background: #eeeeee;
+  color: #333333;
+}
+
+.student-profile-save-button {
+  background: #2d75d9;
+  color: #ffffff;
+}
+
+.student-profile-save-button:hover {
+  background: #185ebd;
+}
+
+/* Responsive Layout */
+
+@media (max-width: 1100px) {
+  .student-profile-main {
+    padding-right: 22px;
+  }
+
+  .student-profile-information {
+    column-gap: 14px;
+  }
+
+  .student-profile-divider {
+    margin-right: 22px;
+  }
+
+  .student-profile-info-icon {
+    width: 43px;
+    height: 43px;
+    min-width: 43px;
+  }
+
+  .student-profile-info-text p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 850px) {
+  .student-profile-main {
+    padding: 65px 20px 30px;
+  }
+
+  .student-personal-card {
+    max-width: 650px;
+  }
+
+  .student-personal-card-body {
+    padding: 22px 18px;
+  }
+
+  .student-profile-avatar-section {
+    width: 150px;
+    min-width: 150px;
+  }
+
+  .student-profile-divider {
+    margin-right: 18px;
+  }
+
+  .student-profile-information {
+    grid-template-columns: 1fr;
+    row-gap: 18px;
+  }
+
+  .student-profile-info-column {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .student-profile-main {
+    padding: 55px 14px 25px;
+  }
+
+  .student-profile-header {
+    margin-bottom: 28px;
+  }
+
+  .student-profile-header h1 {
+    font-size: 23px;
+  }
+
+  .student-profile-header p {
+    font-size: 14px;
+  }
+
+  .student-personal-card-body {
+    flex-direction: column;
+    padding: 25px 18px;
+  }
+
+  .student-profile-avatar-section {
+    width: 100%;
+    min-width: 0;
+    padding: 0 0 20px;
+  }
+
+  .student-profile-divider {
+    width: 100%;
+    height: 1px;
+    margin: 0 0 22px;
+  }
+
+  .student-profile-information {
+    width: 100%;
+    grid-template-columns: 1fr;
+    row-gap: 18px;
+  }
+
+  .student-profile-info-column {
+    gap: 18px;
+  }
+
+  .student-profile-info-item {
+    gap: 12px;
+  }
+
+  .student-profile-info-text p {
+    font-size: 14px;
+  }
+
+  .student-profile-edit-button {
+    margin-top: 22px;
+  }
+}
+
+
+@media (max-width: 850px) {
+  .student-profile-main {
+    width: 100%;
+    margin-left: 0;
+    padding: 65px 20px 30px;
+  }
+
+  .student-personal-card {
+    margin-left: 0;
+  }
+}
+
