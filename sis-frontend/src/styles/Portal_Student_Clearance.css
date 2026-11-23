@@ -1,0 +1,289 @@
+
+.student-clearance-layout {
+  min-height: 100vh;
+  width: 90%;
+  display: flex;
+  background: #ffffff;
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+  margin-left: auto;
+  justify-content: center;
+}
+
+.student-clearance-main {
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  padding: 12px 36px 30px;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.student-clearance-header {
+  margin-bottom: 22px;
+}
+
+.student-clearance-header h1 {
+  margin: 0;
+  color: #080808;
+  font-size: 29px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.student-clearance-header p {
+  margin: 0;
+  color: #111111;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Main Card */
+
+.student-clearance-card {
+  width: 100%;
+  min-height: 615px;
+  overflow: hidden;
+  border: 1px solid #4d8df3;
+  border-radius: 9px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* Student Information */
+
+.student-clearance-information {
+  min-height: 105px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  padding: 20px 16px 12px;
+  box-sizing: border-box;
+}
+
+.student-clearance-info-item {
+  min-width: 0;
+  min-height: 62px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 0 8px;
+  border-right: 1px solid #4d8df3;
+  text-align: center;
+}
+
+.student-clearance-info-item:last-child {
+  border-right: none;
+}
+
+.student-clearance-info-item span {
+  color: #111111;
+  font-size: 8px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.student-clearance-info-item strong {
+  color: #111111;
+  font-size: 11px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Controls */
+
+.student-clearance-controls {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px 12px;
+  box-sizing: border-box;
+}
+
+.student-clearance-select-wrapper {
+  position: relative;
+  width: 157px;
+  height: 32px;
+}
+
+.student-clearance-select-wrapper select {
+  width: 100%;
+  height: 100%;
+  appearance: none;
+  padding: 0 30px 0 12px;
+  border: none;
+  border-radius: 6px;
+  outline: none;
+  background: #2d75d9;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.student-clearance-select-wrapper select option {
+  background: #ffffff;
+  color: #111111;
+}
+
+.student-clearance-select-wrapper svg {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #ffffff;
+  pointer-events: none;
+}
+
+/* Clearance Table */
+
+.student-clearance-table-wrapper {
+  width: 100%;
+  min-height: 360px;
+  overflow-x: auto;
+  border-radius: 6px;
+  background: #2d75d9;
+}
+
+.student-clearance-table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #2d75d9;
+  color: #ffffff;
+}
+
+.student-clearance-table thead {
+  height: 43px;
+}
+
+.student-clearance-table th {
+  padding: 10px 8px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.student-clearance-table th:first-child {
+  width: 27%;
+  text-align: left;
+  padding-left: 17px;
+}
+
+.student-clearance-table tbody tr {
+  height: 40px;
+}
+
+.student-clearance-table td {
+  padding: 9px 8px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.student-clearance-table td:first-child {
+  text-align: left;
+  padding-left: 17px;
+}
+
+.student-clearance-empty {
+  height: 100px;
+  text-align: center !important;
+  white-space: normal !important;
+}
+
+/* Clearance Requirements */
+
+.student-clearance-requirements {
+  padding: 17px 14px 13px;
+  color: #111111;
+}
+
+.student-clearance-requirements h3 {
+  margin: 0 0 12px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.student-clearance-requirements ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.student-clearance-requirements li {
+  margin-bottom: 12px;
+  padding-left: 1px;
+  font-size: 8px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Responsive */
+
+@media (max-width: 950px) {
+  .student-clearance-layout {
+    width: 100%;
+  }
+
+  .student-clearance-main {
+    padding: 65px 18px 25px;
+  }
+}
+
+@media (max-width: 600px) {
+  .student-clearance-main {
+    padding: 60px 12px 20px;
+  }
+
+  .student-clearance-header h1 {
+    font-size: 24px;
+  }
+
+  .student-clearance-header p {
+    font-size: 15px;
+  }
+
+  .student-clearance-information {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 15px;
+    padding: 18px 12px;
+  }
+
+  .student-clearance-info-item {
+    min-height: 55px;
+    gap: 10px;
+  }
+
+  .student-clearance-info-item:nth-child(2) {
+    border-right: none;
+  }
+
+  .student-clearance-info-item span {
+    font-size: 8px;
+  }
+
+  .student-clearance-info-item strong {
+    font-size: 10px;
+  }
+
+  .student-clearance-table-wrapper {
+    min-height: 360px;
+  }
+
+  .student-clearance-requirements {
+    padding: 15px 12px;
+  }
+
+  .student-clearance-requirements li {
+    font-size: 9px;
+  }
+}

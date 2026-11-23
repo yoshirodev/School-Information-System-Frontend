@@ -1,0 +1,161 @@
+.teacher-clearance-layout {
+  min-height: 100vh;
+  width: 90%;
+  margin-left: auto;
+  display: flex;
+  background: #ffffff;
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+}
+
+.teacher-clearance-main {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 35px 18px 22px;
+  box-sizing: border-box;
+}
+
+.teacher-clearance-header {
+  margin-bottom: 20px;
+}
+
+.teacher-clearance-header h1 {
+  margin: 0;
+  color: #080808;
+  font-size: 29px;
+  font-weight: 700;
+}
+
+.teacher-clearance-header p {
+  margin: 0;
+  font-size: 18px;
+}
+
+.teacher-clearance-panel {
+  width: 100%;
+  border: 1px solid #4d8df3;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.teacher-clearance-student-info {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 27px 15px 15px;
+}
+
+.teacher-clearance-student-info div {
+  min-height: 57px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 20px;
+  border-right: 1px solid #4d8df3;
+}
+
+.teacher-clearance-student-info div:last-child {
+  border-right: none;
+}
+
+.teacher-clearance-student-info span {
+  font-size: 9px;
+  color: #111111;
+}
+
+.teacher-clearance-student-info strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.teacher-clearance-controls {
+  padding: 0 14px 15px;
+}
+
+.teacher-clearance-controls button {
+  width: 151px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  border-radius: 6px;
+  background: #2d75d9;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.teacher-clearance-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.teacher-clearance-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #2d75d9;
+  color: #ffffff;
+}
+
+.teacher-clearance-table th,
+.teacher-clearance-table td {
+  height: 38px;
+  padding: 5px 12px;
+  text-align: center;
+  font-size: 11px;
+}
+
+.teacher-clearance-table th {
+  font-weight: 500;
+}
+
+.teacher-clearance-table td {
+  font-weight: 500;
+}
+
+.teacher-clearance-requirements {
+  padding: 16px 25px 18px;
+  color: #111111;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.teacher-clearance-requirements strong {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.teacher-clearance-requirements ul {
+  padding-left: 18px;
+  margin: 0;
+}
+
+.teacher-clearance-requirements li {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 750px) {
+  .teacher-clearance-layout {
+    width: 100%;
+  }
+
+  .teacher-clearance-main {
+    padding: 65px 12px 20px;
+  }
+
+  .teacher-clearance-student-info {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 15px;
+  }
+
+  .teacher-clearance-student-info div:nth-child(2) {
+    border-right: none;
+  }
+
+  .teacher-clearance-table {
+    min-width: 600px;
+  }
+}
