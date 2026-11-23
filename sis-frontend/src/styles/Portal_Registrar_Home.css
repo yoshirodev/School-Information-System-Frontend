@@ -1,0 +1,744 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --portal-blue: #2d75d6;
+  --portal-blue-dark: #2468c5;
+  --portal-blue-light: #dce8fc;
+  --portal-border: #2d75d6;
+  --portal-text: #111827;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  min-height: 100%;
+  margin: 0;
+}
+
+.registrar-portal {
+  min-height: 100vh;
+  width: 100%;
+  background: #fff;
+  color: var(--portal-text);
+  font-family: 'Inter', sans-serif;
+}
+
+/* Sidebar — matched to the Student Portal */
+.registrar-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  width: 211px;
+  min-height: 100vh;
+  padding: 0 0 18px;
+  background: var(--portal-blue);
+  color: #fff;
+}
+
+.registrar-brand {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 17px 25px 0;
+}
+
+.registrar-brand img {
+  width: 49px;
+  height: 49px;
+  flex: 0 0 49px;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+}
+
+.registrar-brand div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 15px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.registrar-brand strong {
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.registrar-brand span {
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.registrar-nav-label {
+  margin-top: 25px;
+  padding: 0 28px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .6px;
+  opacity: .85;
+}
+
+.registrar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 0 28px;
+}
+
+.registrar-nav-item,
+.registrar-logout {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 62px;
+  padding: 8px 15px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background .18s ease;
+}
+
+.registrar-nav-item:hover,
+.registrar-nav-item.active,
+.registrar-logout:hover {
+  background: rgba(255, 255, 255, .13);
+}
+
+.registrar-nav-item svg,
+.registrar-logout svg { flex: 0 0 auto; }
+
+.registrar-nav-item.active { color: #fff; }
+.nav-active-dot { display: none; }
+
+.registrar-logout {
+  margin-top: auto;
+  padding-left: 43px;
+  font-weight: 500;
+}
+
+/* Main dashboard — same column proportions and spacing */
+.registrar-main {
+  min-height: 100vh;
+  margin-left: 211px;
+  padding: 31px 12px 18px 10px;
+}
+
+.registrar-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2.02fr) minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.registrar-left-column,
+.registrar-right-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.registrar-left-column { gap: 22px; }
+.registrar-right-column { gap: 19px; }
+
+/* Welcome banner */
+.registrar-welcome-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px minmax(145px, 165px);
+  align-items: center;
+  gap: 17px;
+  min-height: 204px;
+  padding: 20px 18px;
+  border-radius: 8px;
+  background: var(--portal-blue);
+  color: #fff;
+}
+
+.registrar-welcome-copy {
+  min-width: 0;
+  padding-right: 17px;
+  border-right: 1px solid rgba(255, 255, 255, .85);
+}
+
+.registrar-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .45px;
+  line-height: 1.5;
+}
+
+.registrar-welcome-copy h1 {
+  margin: 0 0 17px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 29px;
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+.registrar-welcome-copy p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 2;
+}
+
+.registrar-welcome-avatar {
+  display: flex;
+  width: 82px;
+  height: 82px;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #d6d6d6;
+  color: #fff;
+}
+
+.registrar-welcome-avatar svg { width: 78px; height: 78px; }
+
+.registrar-welcome-person {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.registrar-welcome-person span { font-size: 9px; font-weight: 400; }
+.registrar-welcome-person strong { overflow-wrap: anywhere; font-weight: 700; }
+.registrar-welcome-person small { font-size: 10px; }
+
+/* Card headings */
+.registrar-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 15px -2px;
+  color: var(--portal-blue);
+}
+
+.registrar-section-heading h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.registrar-section-heading > svg { flex: 0 0 auto; }
+
+/* Quick overview */
+.registrar-overview-card {
+  min-height: 190px;
+  padding: 14px 18px;
+  border: 1px solid var(--portal-border);
+  border-radius: 9px;
+  background: #fff;
+}
+
+.registrar-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.registrar-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  min-height: 61px;
+  padding: 8px 10px;
+  border: 1px solid #6b9df0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.registrar-stat-icon {
+  display: flex;
+  width: 39px;
+  height: 39px;
+  flex: 0 0 39px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--portal-blue-light);
+  color: var(--portal-blue);
+}
+
+.registrar-stat-card > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.registrar-stat-card strong {
+  color: var(--portal-text);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.registrar-stat-card > div span {
+  color: #333;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+/* Recent activity */
+.registrar-activity-card {
+  min-height: 260px;
+  flex: 1 1 auto;
+  padding: 14px 18px;
+  border: 1px solid var(--portal-border);
+  border-radius: 9px;
+  background: #fff;
+}
+
+.registrar-activity-heading { margin-bottom: 12px; }
+.registrar-activity-heading button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  padding: 4px 0 4px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--portal-blue);
+  cursor: pointer;
+  font: 600 11px 'Inter', sans-serif;
+}
+.registrar-activity-heading button:hover { text-decoration: underline; }
+
+.registrar-activity-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.registrar-activity-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 65px;
+  padding: 7px 8px;
+  border: 1px solid #6b9df0;
+  border-radius: 10px;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  text-align: left;
+  transition: background .18s ease, box-shadow .18s ease;
+}
+.registrar-activity-row + .registrar-activity-row { margin-top: 12px; }
+.registrar-activity-row:hover {
+  background: #f4f8ff;
+  box-shadow: 0 2px 7px rgba(45, 117, 214, .12);
+}
+
+.registrar-row-icon {
+  display: flex;
+  width: 43px;
+  min-width: 43px;
+  height: 43px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #dce9fb;
+  color: var(--portal-blue);
+}
+
+.registrar-row-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+}
+.registrar-row-copy strong {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.registrar-row-copy small {
+  overflow: hidden;
+  color: #111;
+  font-size: 9px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.registrar-activity-row time {
+  flex: 0 0 auto;
+  color: #555;
+  font-size: 9px;
+}
+.registrar-row-chevron { flex: 0 0 auto; color: #111; }
+
+/* Updates and notifications */
+.registrar-notifications-card {
+  min-height: 333px;
+  padding: 11px 20px 8px;
+  border: 1px solid var(--portal-border);
+  border-radius: 9px;
+  background: #fff;
+}
+
+.registrar-notifications-card .registrar-section-heading {
+  justify-content: center;
+  margin: 0;
+  padding: 0 0 16px;
+  border-bottom: 1px solid #75a3ef;
+}
+.registrar-notifications-card .registrar-section-heading h2 {
+  font-size: 16px;
+  font-weight: 500;
+}
+.registrar-notification-list { display: flex; flex-direction: column; }
+
+.registrar-notification-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 89px;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid #75a3ef;
+  background: transparent;
+  color: var(--portal-blue);
+  cursor: pointer;
+  text-align: left;
+}
+.registrar-notification-row:last-child { border-bottom: 0; }
+.registrar-notification-row:hover .registrar-row-copy strong { text-decoration: underline; }
+.registrar-notification-icon {
+  display: flex;
+  flex: 0 0 30px;
+  align-items: center;
+  justify-content: center;
+}
+.registrar-notification-icon svg { width: 29px; height: 29px; }
+.registrar-notification-row > svg { flex: 0 0 auto; }
+.registrar-notification-row .registrar-row-copy strong {
+  color: var(--portal-blue);
+  font-size: 13px;
+}
+.registrar-notification-row .registrar-row-copy small {
+  color: #111;
+  font-size: 9px;
+  white-space: normal;
+}
+
+/* Registrar information */
+.registrar-information-card {
+  overflow: hidden;
+  border: 1px solid var(--portal-border);
+  border-radius: 0 0 9px 9px;
+  background: #fff;
+}
+.registrar-information-heading {
+  display: flex;
+  min-height: 73px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 9px;
+  border: 0;
+  border-bottom: 1px solid var(--portal-border);
+  background: #dce8fc;
+  color: var(--portal-blue);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+}
+.registrar-information-heading:hover { background: #d1e1fb; }
+.registrar-information-content { display: flex; flex-direction: column; }
+.registrar-information-content > div {
+  display: flex;
+  min-height: 64px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-bottom: 1px solid #75a3ef;
+  font-size: 12px;
+}
+.registrar-information-content > div:last-child { border-bottom: 0; }
+.registrar-information-content span,
+.registrar-information-content strong { font-weight: 400; overflow-wrap: anywhere; }
+
+/* Upcoming enrollment */
+.registrar-enrollment-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 100px;
+  padding: 15px 18px;
+  border: 1px solid var(--portal-border);
+  border-radius: 9px;
+  background: #fff;
+}
+.registrar-enrollment-icon {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--portal-blue-light);
+  color: var(--portal-blue);
+}
+.registrar-enrollment-card h2 {
+  margin: 0 0 6px;
+  color: var(--portal-blue);
+  font-size: 14px;
+}
+.registrar-enrollment-card p { margin: 0; font-size: 12px; }
+
+/* Empty states and overlays */
+.registrar-empty-state {
+  margin: 0;
+  padding: 22px 8px;
+  color: #6b7280;
+  text-align: center;
+  font-size: 12px;
+}
+.registrar-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, .42);
+}
+.registrar-details-modal {
+  width: min(100%, 520px);
+  padding: 22px;
+  border: 1px solid var(--portal-border);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .18);
+}
+.registrar-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+.registrar-modal-header > div > span {
+  color: var(--portal-blue);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .6px;
+}
+.registrar-modal-header h2 {
+  margin: 5px 0 0;
+  color: var(--portal-blue);
+  font-size: 18px;
+}
+.registrar-modal-header button {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+}
+.registrar-modal-content {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.registrar-modal-date {
+  display: block;
+  margin-top: 14px;
+  color: #6b7280;
+  font-size: 11px;
+}
+.registrar-modal-close {
+  margin-top: 20px;
+  padding: 9px 20px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--portal-blue);
+  color: #fff;
+  cursor: pointer;
+}
+.registrar-modal-close:hover { background: var(--portal-blue-dark); }
+
+.registrar-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(420px, calc(100vw - 40px));
+  padding: 12px 15px;
+  border-radius: 7px;
+  background: #172033;
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, .2);
+  font-size: 13px;
+}
+.registrar-toast button {
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Mobile controls */
+.registrar-mobile-header,
+.registrar-nav-backdrop { display: none; }
+
+@media (max-width: 900px) {
+  .registrar-dashboard-grid { grid-template-columns: minmax(0, 1fr); gap: 15px; }
+  .registrar-left-column, .registrar-right-column { gap: 15px; }
+  .registrar-welcome-card { grid-template-columns: minmax(0, 1fr) 82px minmax(145px, 165px); }
+  .registrar-overview-card { min-height: auto; }
+  .registrar-right-column { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .registrar-enrollment-card { grid-column: 1 / -1; }
+}
+
+@media (max-width: 760px) {
+  .registrar-sidebar {
+    width: 230px;
+    transform: translateX(-100%);
+    transition: transform .2s ease;
+  }
+  .registrar-sidebar.is-open { transform: translateX(0); }
+  .registrar-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    display: block;
+    border: 0;
+    background: rgba(0, 0, 0, .35);
+  }
+  .registrar-main { margin-left: 0; padding: 14px; }
+  .registrar-mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 13px;
+    color: var(--portal-blue);
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .registrar-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--portal-blue);
+    color: #fff;
+    cursor: pointer;
+  }
+  .registrar-right-column { display: flex; }
+  .registrar-welcome-card {
+    grid-template-columns: minmax(0, 1fr) 70px;
+    min-height: auto;
+    padding: 20px;
+  }
+  .registrar-welcome-copy { border-right: 0; }
+  .registrar-welcome-avatar { grid-column: 2; grid-row: 1; }
+  .registrar-welcome-person {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, .45);
+  }
+  .registrar-notifications-card { min-height: auto; }
+  .registrar-notification-row { min-height: 70px; }
+  .registrar-information-heading { min-height: 58px; }
+}
+
+@media (max-width: 420px) {
+  .registrar-main { padding: 10px; }
+  .registrar-welcome-card {
+    grid-template-columns: minmax(0, 1fr) 55px;
+    gap: 8px;
+    padding: 15px;
+  }
+  .registrar-welcome-copy h1 { font-size: 21px; }
+  .registrar-welcome-copy p { font-size: 10px; }
+  .registrar-welcome-avatar { width: 52px; height: 52px; }
+  .registrar-welcome-avatar svg { width: 55px; height: 55px; }
+  .registrar-welcome-person { grid-template-columns: 1fr; }
+  .registrar-stats-grid { grid-template-columns: 1fr; }
+  .registrar-activity-card { padding: 12px 9px; }
+  .registrar-row-copy strong, .registrar-row-copy small { white-space: normal; }
+  .registrar-activity-row time { display: none; }
+  .registrar-notifications-card { padding-right: 14px; padding-left: 14px; }
+}
+
+
+/* Registrar navbar component refinements */
+.registrar-nav {
+  flex: 1;
+}
+
+.registrar-nav-item {
+  gap: 11px;
+  padding-right: 9px;
+  padding-left: 11px;
+  font-size: 13px;
+}
+
+.registrar-nav-item span {
+  line-height: 1.3;
+}
+
+@media (max-width: 760px) {
+  .registrar-mobile-header {
+    padding: 14px 14px 0;
+    margin-bottom: 0;
+  }
+
+  .registrar-main {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .registrar-mobile-header {
+    padding: 10px 10px 0;
+  }
+
+  .registrar-main {
+    padding: 10px;
+  }
+}
