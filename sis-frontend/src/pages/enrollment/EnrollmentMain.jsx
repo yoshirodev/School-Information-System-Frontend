@@ -80,6 +80,28 @@ export default function EnrollmentMain() {
         guardianProvince: "",
         guardianMunicipalityCity: "",
         guardianCountry: "",
+
+        // Step 9: Advanced Information (All Optional)
+        psaBirthCertificateNo: "",
+        motherTongue: "",
+        isIndigenous: "",
+        indigenousSpecification: "",
+        isFourPsBeneficiary: "",
+        fourPsHouseholdId: "",
+
+        // Step 10: Disability Information (Optional)
+        isLearnerWithDisability: "",
+        disabilityTypes: [],
+
+        // Step 11: Previous School Information (Optional)
+        lastGradeLevelCompleted: "",
+        lastSchoolYearCompleted: "",
+        lastSchoolAttended: "",
+        schoolId: "",
+
+        // Step 12: Consent
+        preferredLearningModalities: [],
+        consentToDataProcessing: "",
     });
 
     const [errors, setErrors] = useState({});
@@ -327,44 +349,66 @@ export default function EnrollmentMain() {
 
         switch (currentStep) {
             case 1:
-                if (!validateBasicInfo()) return;
+                //if (!validateBasicInfo()) return;
                 setCurrentStep(2);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 2:
-                if (!validateNameInfo()) return;
+                //if (!validateNameInfo()) return;
                 setCurrentStep(3);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 3:
-                if (!validateBirthInfo()) return;
+                //if (!validateBirthInfo()) return;
                 setCurrentStep(4);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 4:
-                if (!validateAddressInfo()) return;
+                //if (!validateAddressInfo()) return;
                 setCurrentStep(5);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 5:
-                if (!validateGuardianInfo()) return;
+                //if (!validateGuardianInfo()) return;
                 setCurrentStep(6);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 6:
-                if (!validateFatherAddress()) return;
+                //if (!validateFatherAddress()) return;
                 setCurrentStep(7);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 7:
-                if (!validateMotherAddress()) return;
+                //if (!validateMotherAddress()) return;
                 setCurrentStep(8);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 8:
-                setCurrentStep(8);
+                setCurrentStep(9);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
+            case 9:
+                setCurrentStep(10);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 10:
+                setCurrentStep(11);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 11:
+                setCurrentStep(12);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 12:
+                if (!formData.consentToDataProcessing) {
+                    setStatus("Please select Yes or No for the consent statement.");
+                    return;
+                }
+                setCurrentStep(13);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 13:
+                return;
             default:
                 break;
         }
@@ -408,6 +452,26 @@ export default function EnrollmentMain() {
                 setCurrentStep(7);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
+            case 9:
+                setCurrentStep(8);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 10:
+                setCurrentStep(9);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 11:
+                setCurrentStep(10);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 12:
+                setCurrentStep(11);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 13:
+                setCurrentStep(12);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
             default:
                 break;
         }
@@ -441,6 +505,21 @@ export default function EnrollmentMain() {
         return age >= 0 ? age : "";
     };
 
+    const toggleDisabilityType = (type) => {
+        setFormData((prev) => {
+            const isSelected = prev.disabilityTypes.includes(type);
+
+            return {
+                ...prev,
+                disabilityTypes: isSelected
+                    ? prev.disabilityTypes.filter((item) => item !== type)
+                    : [...prev.disabilityTypes, type],
+            };
+        });
+
+        setStatus("");
+    };
+
     // porgress calculation for the progress bar, since the first 3 steps are considered as one step in the progress bar
     const progressStep =
         currentStep <= 3 ? 1 :
@@ -450,14 +529,10 @@ export default function EnrollmentMain() {
     return (
         <div className="relative bg-white min-h-screen w-full overflow-x-hidden">
 
-            {/* Navbar */}
-            <Navbar
-                logo={nontLogo}
-                purpose="Enrollment Registration"
-            />
+
 
             {/* Background */}
-            <div className="absolute inset-x-0 top-[109px] bottom-0 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 bottom-0 overflow-hidden">
                 <img
                     src={bgmain}
                     alt=""
@@ -466,7 +541,7 @@ export default function EnrollmentMain() {
             </div>
 
             {/* Progress Indicator */}
-            <div className="relative z-10 flex justify-center pt-[123px] px-4">
+            <div className="relative z-10 flex justify-center pt-[15px] px-4">
                 <div className="bg-white rounded-[20px] w-full max-w-[379px] min-h-[75px] px-5 py-3">
 
                     <div className="grid grid-cols-4 gap-2">
@@ -2094,11 +2169,1146 @@ export default function EnrollmentMain() {
             )}
 
             {/* ==============================
-                SCREEN 9: PART 3 PARENT / GUARDIAN ADDRESS INFORMATION
+                SCREEN 9: PART 4 ADVANCE INFORMATION
             ============================== */}
 
-            
+            {currentStep === 9 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
 
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[639px] px-5 sm:px-8 py-[26px]">
+
+                        {/* Heading */}
+                        <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold leading-9 mb-8">
+                            Learner Information IV - Advanced Information
+                        </h1>
+
+                        {/* Advanced Information Form */}
+                        <div className="w-full max-w-[725px] mx-auto border border-[#2B75D8] rounded-[15px] overflow-hidden bg-white">
+
+                            {/* Section Header */}
+                            <div className="bg-[rgba(43,117,216,0.25)] min-h-[85px] flex items-center px-6 sm:px-10">
+                                <h2 className="text-[#2B75D8] font-poppins text-xl sm:text-3xl font-bold">
+                                    Advanced Information - (Optional)
+                                </h2>
+                            </div>
+
+                            <form
+                                onSubmit={handleNext}
+                                noValidate
+                                className="p-6 sm:px-[35px] sm:py-5"
+                            >
+
+                                {/* PSA Birth Certificate + Mother Tongue */}
+                                <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-5 mb-5">
+
+                                    <div>
+                                        <label
+                                            htmlFor="psaBirthCertificateNo"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] mb-2"
+                                        >
+                                            PSA Birth Certificate No. (If Available Upon Registration)
+                                        </label>
+
+                                        <input
+                                            id="psaBirthCertificateNo"
+                                            name="psaBirthCertificateNo"
+                                            type="text"
+                                            value={formData.psaBirthCertificateNo}
+                                            onChange={(e) =>
+                                                updateField("psaBirthCertificateNo", e.target.value)
+                                            }
+                                            placeholder="Enter PSA Birth Certificate No."
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            htmlFor="motherTongue"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] mb-2"
+                                        >
+                                            Mother Tongue
+                                        </label>
+
+                                        <input
+                                            id="motherTongue"
+                                            name="motherTongue"
+                                            type="text"
+                                            value={formData.motherTongue}
+                                            onChange={(e) =>
+                                                updateField("motherTongue", e.target.value)
+                                            }
+                                            placeholder="Enter Mother Tongue"
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+                                    </div>
+
+                                </div>
+
+                                {/* Indigenous Peoples Information */}
+                                <div className="mb-6">
+
+                                    <label className="block text-[#2B75D8] font-poppins text-[15px] mb-3">
+                                        Belonging to any Indigenous Peoples (IP) Community / Indigenous Cultural Community?
+                                    </label>
+
+                                    <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mb-4">
+
+                                        {[
+                                            { value: "yes", label: "Yes" },
+                                            { value: "no", label: "No" },
+                                        ].map((option) => (
+                                            <label
+                                                key={option.value}
+                                                className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[15px] cursor-pointer"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="isIndigenous"
+                                                    value={option.value}
+                                                    checked={formData.isIndigenous === option.value}
+                                                    onChange={(e) => {
+                                                        updateField("isIndigenous", e.target.value);
+
+                                                        if (e.target.value === "no") {
+                                                            updateField("indigenousSpecification", "");
+                                                        }
+                                                    }}
+                                                    className="w-4 h-4 accent-[#2B75D8]"
+                                                />
+                                                {option.label}
+                                            </label>
+                                        ))}
+
+                                    </div>
+
+                                    <label
+                                        htmlFor="indigenousSpecification"
+                                        className="block text-[#2B75D8] font-poppins text-[15px] mb-2"
+                                    >
+                                        If Yes, Please Specify:
+                                    </label>
+
+                                    <input
+                                        id="indigenousSpecification"
+                                        name="indigenousSpecification"
+                                        type="text"
+                                        value={formData.indigenousSpecification}
+                                        onChange={(e) =>
+                                            updateField("indigenousSpecification", e.target.value)
+                                        }
+                                        placeholder="Enter Indigenous Peoples community"
+                                        disabled={formData.isIndigenous !== "yes"}
+                                        className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    />
+
+                                </div>
+
+                                {/* 4Ps Beneficiary Information */}
+                                <div className="mb-2">
+
+                                    <label className="block text-[#2B75D8] font-poppins text-[15px] mb-3">
+                                        Is Your Family a beneficiary of 4Ps?
+                                    </label>
+
+                                    <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mb-4">
+
+                                        {[
+                                            { value: "yes", label: "Yes" },
+                                            { value: "no", label: "No" },
+                                        ].map((option) => (
+                                            <label
+                                                key={option.value}
+                                                className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[15px] cursor-pointer"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="isFourPsBeneficiary"
+                                                    value={option.value}
+                                                    checked={formData.isFourPsBeneficiary === option.value}
+                                                    onChange={(e) => {
+                                                        updateField("isFourPsBeneficiary", e.target.value);
+
+                                                        if (e.target.value === "no") {
+                                                            updateField("fourPsHouseholdId", "");
+                                                        }
+                                                    }}
+                                                    className="w-4 h-4 accent-[#2B75D8]"
+                                                />
+                                                {option.label}
+                                            </label>
+                                        ))}
+
+                                    </div>
+
+                                    <label
+                                        htmlFor="fourPsHouseholdId"
+                                        className="block text-[#2B75D8] font-poppins text-[15px] mb-2"
+                                    >
+                                        If Yes, write the 4Ps Household ID Number below
+                                    </label>
+
+                                    <input
+                                        id="fourPsHouseholdId"
+                                        name="fourPsHouseholdId"
+                                        type="text"
+                                        value={formData.fourPsHouseholdId}
+                                        onChange={(e) =>
+                                            updateField("fourPsHouseholdId", e.target.value)
+                                        }
+                                        placeholder="Enter 4Ps Household ID number"
+                                        disabled={formData.isFourPsBeneficiary !== "yes"}
+                                        className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    />
+
+                                </div>
+
+                                {/* Navigation Buttons */}
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                                    {/* Back */}
+                                    <button
+                                        type="button"
+                                        onClick={handleBack}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                                    >
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M17 8H1M8 1L1 8L8 15"
+                                                stroke="#2B75D8"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                        Back
+                                    </button>
+
+                                    {/* Next */}
+                                    <button
+                                        type="submit"
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                                    >
+                                        Next
+
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                            <path
+                                                d="M1 8H17M10 1L17 8L10 15"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 10: PART 4 ADVANCE INFORMATION
+            ============================== */}
+
+            {currentStep === 10 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[639px] px-5 sm:px-8 py-[26px]">
+
+                        {/* Page Heading */}
+                        <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold leading-9 mb-8">
+                            Learner Information IV - Advanced Information
+                        </h1>
+
+                        {/* Disability Information Card */}
+                        <div className="w-full max-w-[1000px] mx-auto border border-[#2B75D8] rounded-[15px] overflow-hidden bg-white">
+
+                            {/* Card Header */}
+                            <div className="bg-[rgba(43,117,216,0.25)] min-h-[85px] flex items-center px-6 sm:px-10">
+                                <h2 className="text-[#2B75D8] font-poppins text-xl sm:text-3xl font-bold">
+                                    Advanced Information - (Optional)
+                                </h2>
+                            </div>
+
+                            <form onSubmit={handleNext} noValidate className="px-6 sm:px-[35px] py-6">
+
+                                {/* Yes / No Question */}
+                                <div className="mb-7">
+                                    <p className="text-[#2B75D8] font-poppins text-[15px] mb-3">
+                                        Is the Child a Learner with Disability?
+                                    </p>
+
+                                    <div className="flex items-center gap-8">
+                                        {[
+                                            { value: "yes", label: "Yes" },
+                                            { value: "no", label: "No" },
+                                        ].map((option) => (
+                                            <label
+                                                key={option.value}
+                                                className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[15px] cursor-pointer"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="isLearnerWithDisability"
+                                                    value={option.value}
+                                                    checked={
+                                                        formData.isLearnerWithDisability === option.value
+                                                    }
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            isLearnerWithDisability: value,
+                                                            disabilityTypes:
+                                                                value === "no"
+                                                                    ? []
+                                                                    : prev.disabilityTypes,
+                                                        }));
+
+                                                        setStatus("");
+                                                    }}
+                                                    className="w-4 h-4 accent-[#2B75D8]"
+                                                />
+                                                {option.label}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Disability Options */}
+                                <fieldset
+                                    disabled={formData.isLearnerWithDisability !== "yes"}
+                                    className="disabled:opacity-50"
+                                >
+                                    <legend className="text-[#2B75D8] font-poppins text-[13px] mb-5">
+                                        If Yes, Specify the type of disability:
+                                    </legend>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-6">
+
+                                        {/* Column 1 */}
+                                        <div className="space-y-4">
+
+                                            <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.disabilityTypes.includes("Visual Impairment")}
+                                                    onChange={() => toggleDisabilityType("Visual Impairment")}
+                                                    className="w-3.5 h-4 accent-[#2B75D8]"
+                                                />
+                                                Visual Impairment
+                                            </label>
+
+                                            <div className="pl-5 space-y-3">
+                                                <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.disabilityTypes.includes("Blind")}
+                                                        onChange={() => toggleDisabilityType("Blind")}
+                                                        className="w-3.5 h-4 accent-[#2B75D8]"
+                                                    />
+                                                    a. blind
+                                                </label>
+
+                                                <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.disabilityTypes.includes("Low Vision")}
+                                                        onChange={() => toggleDisabilityType("Low Vision")}
+                                                        className="w-3.5 h-4 accent-[#2B75D8]"
+                                                    />
+                                                    b. low vision
+                                                </label>
+                                            </div>
+
+                                            <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.disabilityTypes.includes("Multiple Disorder")}
+                                                    onChange={() => toggleDisabilityType("Multiple Disorder")}
+                                                    className="w-3.5 h-4 accent-[#2B75D8]"
+                                                />
+                                                Multiple Disorder
+                                            </label>
+                                        </div>
+
+                                        {/* Column 2 */}
+                                        <div className="space-y-4">
+
+                                            {[
+                                                "Hearing Impairment",
+                                                "Autism Spectrum Disorder",
+                                                "Speech Language Disorder",
+                                            ].map((type) => (
+                                                <label
+                                                    key={type}
+                                                    className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.disabilityTypes.includes(type)}
+                                                        onChange={() => toggleDisabilityType(type)}
+                                                        className="w-3.5 h-4 accent-[#2B75D8] shrink-0"
+                                                    />
+                                                    {type}
+                                                </label>
+                                            ))}
+                                        </div>
+
+                                        {/* Column 3 */}
+                                        <div className="space-y-4">
+
+                                            {[
+                                                "Learning Disability",
+                                                "Emotional-Behavioral Disorder",
+                                                "Cerebral Palsy",
+                                            ].map((type) => (
+                                                <label
+                                                    key={type}
+                                                    className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.disabilityTypes.includes(type)}
+                                                        onChange={() => toggleDisabilityType(type)}
+                                                        className="w-3.5 h-4 accent-[#2B75D8] shrink-0"
+                                                    />
+                                                    {type}
+                                                </label>
+                                            ))}
+                                        </div>
+
+                                        {/* Column 4 */}
+                                        <div className="space-y-4">
+
+                                            {[
+                                                "Intellectual Disability",
+                                                "Orthopedic/Physical Handicap",
+                                                "Special Health Problem/Chronic Disease",
+                                            ].map((type) => (
+                                                <label
+                                                    key={type}
+                                                    className="flex items-start gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.disabilityTypes.includes(type)}
+                                                        onChange={() => toggleDisabilityType(type)}
+                                                        className="w-3.5 h-4 accent-[#2B75D8] shrink-0 mt-0.5"
+                                                    />
+                                                    {type}
+                                                </label>
+                                            ))}
+
+                                            <div className="pl-5">
+                                                <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.disabilityTypes.includes("Cancer")}
+                                                        onChange={() => toggleDisabilityType("Cancer")}
+                                                        className="w-3.5 h-4 accent-[#2B75D8]"
+                                                    />
+                                                    a. Cancer
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                {/* Navigation Buttons */}
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                                    <button
+                                        type="button"
+                                        onClick={handleBack}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                                    >
+                                        <svg
+                                            width="18"
+                                            height="16"
+                                            viewBox="0 0 18 16"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M17 8H1M8 1L1 8L8 15"
+                                                stroke="#2B75D8"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                        Back
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                                    >
+                                        Next
+                                        <svg
+                                            width="18"
+                                            height="16"
+                                            viewBox="0 0 18 16"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M1 8H17M10 1L17 8L10 15"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 11: PART 4 ADVANCE INFORMATION
+            ============================== */}
+
+            {currentStep === 11 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[639px] px-5 sm:px-8 py-[26px]">
+
+                        {/* Page Heading */}
+                        <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold leading-9 mb-8">
+                            Learner Information IV - Advanced Information
+                        </h1>
+
+                        {/* Main Form Card */}
+                        <div className="w-full max-w-[1040px] mx-auto border border-[#2B75D8] rounded-[15px] overflow-hidden bg-white">
+
+                            {/* Section Header */}
+                            <div className="bg-[rgba(43,117,216,0.25)] min-h-[57px] flex items-center px-4">
+                                <h2 className="text-[#2B75D8] font-poppins text-xl sm:text-[25px] font-bold">
+                                    Advanced Information - (Optional)
+                                </h2>
+                            </div>
+
+                            <form
+                                onSubmit={handleNext}
+                                noValidate
+                                className="px-5 sm:px-[30px] py-6 sm:py-5"
+                            >
+
+                                {/* Returning Learners */}
+                                <h3 className="text-[#2B75D8] font-poppins text-[14px] sm:text-[15px] font-bold mb-5 text-center">
+                                    For Returning Learner (Balik-Aral) and Those Who will Transfer/Move In
+                                </h3>
+
+                                {/* Previous School Information */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+
+                                    {/* Last Grade Level Completed */}
+                                    <div>
+                                        <label
+                                            htmlFor="lastGradeLevelCompleted"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] mb-2"
+                                        >
+                                            Last Grade Level Completed
+                                        </label>
+
+                                        <input
+                                            id="lastGradeLevelCompleted"
+                                            name="lastGradeLevelCompleted"
+                                            type="text"
+                                            value={formData.lastGradeLevelCompleted}
+                                            onChange={(e) =>
+                                                updateField("lastGradeLevelCompleted", e.target.value)
+                                            }
+                                            placeholder="Enter grade level completed"
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+                                    </div>
+
+                                    {/* Last School Year Completed */}
+                                    <div>
+                                        <label
+                                            htmlFor="lastSchoolYearCompleted"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] mb-2"
+                                        >
+                                            Last School Year Completed
+                                        </label>
+
+                                        <input
+                                            id="lastSchoolYearCompleted"
+                                            name="lastSchoolYearCompleted"
+                                            type="text"
+                                            value={formData.lastSchoolYearCompleted}
+                                            onChange={(e) =>
+                                                updateField("lastSchoolYearCompleted", e.target.value)
+                                            }
+                                            placeholder="e.g. 2024-2025"
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+                                    </div>
+
+                                    {/* Last School Attended */}
+                                    <div>
+                                        <label
+                                            htmlFor="lastSchoolAttended"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] mb-2"
+                                        >
+                                            Last School Attended
+                                        </label>
+
+                                        <input
+                                            id="lastSchoolAttended"
+                                            name="lastSchoolAttended"
+                                            type="text"
+                                            value={formData.lastSchoolAttended}
+                                            onChange={(e) =>
+                                                updateField("lastSchoolAttended", e.target.value)
+                                            }
+                                            placeholder="Enter last school attended"
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+                                    </div>
+
+                                    {/* School ID */}
+                                    <div>
+                                        <label
+                                            htmlFor="schoolId"
+                                            className="block text-[#2B75D8] font-poppins text-[15px] mb-2"
+                                        >
+                                            School ID
+                                        </label>
+
+                                        <input
+                                            id="schoolId"
+                                            name="schoolId"
+                                            type="text"
+                                            value={formData.schoolId}
+                                            onChange={(e) =>
+                                                updateField("schoolId", e.target.value)
+                                            }
+                                            placeholder="Enter school ID"
+                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                        />
+                                    </div>
+
+                                </div>
+
+                                {/* Status Message */}
+                                {status && (
+                                    <p
+                                        role="status"
+                                        className="mt-5 text-center text-sm text-[#2B75D8] font-poppins"
+                                    >
+                                        {status}
+                                    </p>
+                                )}
+
+                                {/* Navigation Buttons */}
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                                    {/* Back */}
+                                    <button
+                                        type="button"
+                                        onClick={handleBack}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                                    >
+                                        <svg
+                                            width="18"
+                                            height="16"
+                                            viewBox="0 0 18 16"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M17 8H1M8 1L1 8L8 15"
+                                                stroke="#2B75D8"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+
+                                        Back
+                                    </button>
+
+                                    {/* Next */}
+                                    <button
+                                        type="submit"
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                                    >
+                                        Next
+
+                                        <svg
+                                            width="18"
+                                            height="16"
+                                            viewBox="0 0 18 16"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M1 8H17M10 1L17 8L10 15"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 12: PART 4 ADVANCE INFORMATION
+            ============================== */}
+
+            {currentStep === 12 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[639px] px-5 sm:px-8 py-[26px]">
+
+                        <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold leading-9 mb-8">
+                            Learner Information IV - Advanced Information
+                        </h1>
+
+                        <div className="w-full max-w-[1046px] mx-auto border border-[#2B75D8] rounded-[15px] overflow-hidden bg-white">
+
+                            {/* Card Header */}
+                            <div className="bg-[rgba(43,117,216,0.25)] min-h-[57px] flex items-center px-4">
+                                <h2 className="text-[#2B75D8] font-poppins text-xl sm:text-[25px] font-bold">
+                                    Consent
+                                </h2>
+                            </div>
+
+                            <div className="p-4 sm:p-[17px]">
+
+                                {/* Learning Modality Preferences */}
+                                <div className="border border-[#2B75D8] p-4 sm:px-5 sm:py-3">
+
+                                    <h3 className="text-[#2B75D8] font-poppins text-sm font-bold leading-6 mb-1">
+                                        If school will implement other distance learning modalities aside from face-to-face instruction, what would you prefer for your child?
+                                    </h3>
+
+                                    <p className="text-[#2B75D8] font-poppins text-[13px] mb-5">
+                                        Choose all that Apply:
+                                    </p>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
+
+                                        {[
+                                            "Modular (Print)",
+                                            "Modular (Digital)",
+                                            "Online",
+                                            "Educational Television",
+                                            "Radio-Based Instruction",
+                                            "Homeschooling",
+                                            "Blended",
+                                        ].map((modality) => (
+                                            <label
+                                                key={modality}
+                                                className="flex items-center gap-3 text-[#2B75D8] font-poppins text-[13px] cursor-pointer"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={(
+                                                        formData.preferredLearningModalities || []
+                                                    ).includes(modality)}
+                                                    onChange={(e) => {
+                                                        const current =
+                                                            formData.preferredLearningModalities || [];
+
+                                                        const updated = e.target.checked
+                                                            ? [...current, modality]
+                                                            : current.filter(
+                                                                (item) => item !== modality
+                                                            );
+
+                                                        updateField(
+                                                            "preferredLearningModalities",
+                                                            updated
+                                                        );
+                                                    }}
+                                                    className="w-4 h-4 accent-[#2B75D8] shrink-0"
+                                                />
+
+                                                {modality}
+                                            </label>
+                                        ))}
+
+                                    </div>
+                                </div>
+
+                                {/* Certification Statement */}
+                                <div className="max-w-[850px] mx-auto mt-10 text-center">
+
+                                    <p className="text-[#2B75D8] font-poppins text-[13px] font-bold leading-7">
+                                        I hereby certify that the above information given are true and correct to the best of my knowledge and I allow the Department of Education to use my child’s details to create and/or update his/her learner profile in the Learner Information System. The information herein shall be treated as confidential in compliance with the Data Privacy Act of 2012.
+                                    </p>
+
+                                </div>
+
+                                {/* Consent Choice */}
+                                <fieldset className="mt-7">
+                                    <legend className="sr-only">
+                                        Consent confirmation
+                                    </legend>
+
+                                    <div className="flex justify-center items-center gap-12">
+
+                                        {[
+                                            { value: "Yes", label: "Yes" },
+                                            { value: "No", label: "No" },
+                                        ].map((option) => (
+                                            <label
+                                                key={option.value}
+                                                className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="consentToDataProcessing"
+                                                    value={option.value}
+                                                    checked={
+                                                        formData.consentToDataProcessing ===
+                                                        option.value
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            "consentToDataProcessing",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-4 h-4 accent-[#2B75D8]"
+                                                />
+
+                                                {option.label}
+                                            </label>
+                                        ))}
+
+                                    </div>
+                                </fieldset>
+
+                                {/* Validation Message */}
+                                {status && (
+                                    <p
+                                        role="status"
+                                        className="mt-5 text-center text-sm text-[#2B75D8] font-poppins"
+                                    >
+                                        {status}
+                                    </p>
+                                )}
+
+                                {/* Navigation Buttons */}
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                                    <button
+                                        type="button"
+                                        onClick={handleBack}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                                    >
+                                        <svg
+                                            width="18"
+                                            height="16"
+                                            viewBox="0 0 18 16"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M17 8H1M8 1L1 8L8 15"
+                                                stroke="#2B75D8"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                        Back
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleNext}
+                                        className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                                    >
+                                        Next
+                                        <svg
+                                            width="18"
+                                            height="16"
+                                            viewBox="0 0 18 16"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M1 8H17M10 1L17 8L10 15"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 13: PART 5 CONFIRMATION AND SUBMISSION
+            ============================== */}
+
+            {currentStep === 13 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[704px] px-5 sm:px-8 py-[26px]">
+
+                        {/* Page Heading */}
+                        <div className="flex justify-center items-center gap-3 mb-8">
+                            <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-bold">
+                                Confirm your Information
+                            </h1>
+
+                            <svg
+                                width="30"
+                                height="30"
+                                viewBox="0 0 30 30"
+                                fill="none"
+                            >
+                                <path
+                                    d="M15 0C6.71591 0 0 6.71591 0 15C0 23.2841 6.71591 30 15 30C23.2841 30 30 23.2841 30 15C30 6.71591 23.2841 0 15 0ZM21.5018 12.4636L13.5436 17.7532L10.5095 14.7177"
+                                    fill="#2B75D8"
+                                />
+                                <path
+                                    d="M8.6 15.7L13.5 20.6L21.5 11"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </div>
+
+                        {/* Information Cards */}
+                        <div className="max-w-[1260px] mx-auto space-y-8">
+
+                            {/* Basic Information */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                                <section className="border border-[#2B75D8] rounded-[15px] overflow-hidden">
+
+                                    <div className="bg-[rgba(43,117,216,0.25)] px-6 py-4">
+                                        <h2 className="text-[#2B75D8] font-poppins text-xl sm:text-[25px] font-semibold">
+                                            Basic Information
+                                        </h2>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 p-6">
+
+                                        {[
+                                            ["LRN", formData.lrn],
+                                            ["Birthday", formData.birthday],
+                                            ["Last Name", formData.lastName],
+                                            ["Sex", formData.sex],
+                                            ["First Name", formData.firstName],
+                                            ["Place of Birth", formData.placeOfBirth],
+                                            ["Middle Name", formData.middleName],
+                                            ["Mother Tongue", formData.motherTongue],
+                                            ["Ext. Name", formData.extensionName],
+                                            ["Grade Level to Enroll", formData.gradeLevel],
+                                        ].map(([label, value]) => (
+                                            <div key={label}>
+                                                <p className="text-[#2B75D8] font-inter text-sm mb-1">
+                                                    {label}
+                                                </p>
+
+                                                <p className="text-[#2B75D8] font-inter text-base font-bold break-words">
+                                                    {value || "—"}
+                                                </p>
+                                            </div>
+                                        ))}
+
+                                    </div>
+                                </section>
+
+                                {/* Address */}
+                                <section className="border border-[#2B75D8] rounded-[15px] overflow-hidden">
+
+                                    <div className="bg-[rgba(43,117,216,0.25)] px-6 py-4">
+                                        <h2 className="text-[#2B75D8] font-poppins text-xl sm:text-[25px] font-semibold">
+                                            Address
+                                        </h2>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 p-6">
+
+                                        {[
+                                            ["House No. / Street", formData.houseNoStreet],
+                                            ["Subdivision / Barangay", formData.sitioStreet],
+                                            ["Province", formData.province],
+                                            ["Municipality / City", formData.municipalityCity],
+                                            ["Country", formData.country],
+                                            ["Zip Code", formData.zipCode],
+                                        ].map(([label, value]) => (
+                                            <div key={label}>
+                                                <p className="text-[#2B75D8] font-inter text-sm mb-1">
+                                                    {label}
+                                                </p>
+
+                                                <p className="text-[#2B75D8] font-inter text-base font-bold break-words">
+                                                    {value || "—"}
+                                                </p>
+                                            </div>
+                                        ))}
+
+                                    </div>
+                                </section>
+
+                            </div>
+
+                            {/* Parent / Guardian Information */}
+                            <section className="border border-[#2B75D8] rounded-[15px] overflow-hidden">
+
+                                <div className="bg-[rgba(43,117,216,0.25)] px-6 py-4">
+                                    <h2 className="text-[#2B75D8] font-poppins text-xl sm:text-[25px] font-semibold">
+                                        Parent’s / Guardian Information
+                                    </h2>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-6">
+
+                                    {/* Father */}
+                                    <div>
+                                        <h3 className="text-[#2B75D8] font-inter text-lg font-bold mb-4">
+                                            Father’s Name
+                                        </h3>
+
+                                        {[
+                                            ["Last Name", formData.fatherLastName],
+                                            ["First Name", formData.fatherFirstName],
+                                            ["Middle Name", formData.fatherMiddleName],
+                                            ["Contact Number", formData.fatherContactNumber],
+                                        ].map(([label, value]) => (
+                                            <div key={label} className="mb-3">
+                                                <p className="text-[#2B75D8] font-inter text-sm">
+                                                    {label}:
+                                                </p>
+                                                <p className="text-[#2B75D8] font-inter text-base font-bold break-words">
+                                                    {value || "—"}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Mother */}
+                                    <div>
+                                        <h3 className="text-[#2B75D8] font-inter text-lg font-bold mb-4">
+                                            Mother’s Maiden Name
+                                        </h3>
+
+                                        {[
+                                            ["Last Name", formData.motherLastName],
+                                            ["First Name", formData.motherFirstName],
+                                            ["Middle Name", formData.motherMiddleName],
+                                            ["Contact Number", formData.motherContactNumber],
+                                        ].map(([label, value]) => (
+                                            <div key={label} className="mb-3">
+                                                <p className="text-[#2B75D8] font-inter text-sm">
+                                                    {label}:
+                                                </p>
+                                                <p className="text-[#2B75D8] font-inter text-base font-bold break-words">
+                                                    {value || "—"}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Legal Guardian */}
+                                    <div>
+                                        <h3 className="text-[#2B75D8] font-inter text-lg font-bold mb-4">
+                                            Legal Guardian’s Name
+                                        </h3>
+
+                                        {[
+                                            ["Last Name", formData.guardianLastName],
+                                            ["First Name", formData.guardianFirstName],
+                                            ["Middle Name", formData.guardianMiddleName],
+                                            ["Contact Number", formData.guardianContactNumber],
+                                        ].map(([label, value]) => (
+                                            <div key={label} className="mb-3">
+                                                <p className="text-[#2B75D8] font-inter text-sm">
+                                                    {label}:
+                                                </p>
+                                                <p className="text-[#2B75D8] font-inter text-base font-bold break-words">
+                                                    {value || "—"}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                </div>
+                            </section>
+
+                        </div>
+
+                        {/* Status Message */}
+                        {status && (
+                            <p
+                                role="status"
+                                className="mt-5 text-center text-sm text-[#2B75D8] font-poppins"
+                            >
+                                {status}
+                            </p>
+                        )}
+
+                        {/* Navigation */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-10">
+
+                            <button
+                                type="button"
+                                onClick={handleBack}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                            >
+                                <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                    <path
+                                        d="M17 8H1M8 1L1 8L8 15"
+                                        stroke="#2B75D8"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                                Back
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleNext}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
+                            >
+                                Done
+                                <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                    <path
+                                        d="M1 8H17M10 1L17 8L10 15"
+                                        stroke="white"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </button>
+
+                        </div>
+
+                    </div>
+                </main>
+            )}
         </div>
     );
 }

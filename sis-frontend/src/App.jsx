@@ -4,9 +4,26 @@ import LandingPage from "./pages/LandingPage";
 import PortalLogin from "./pages/portal/PortalLogin";
 import EnrollRegis from "./pages/enrollment/EnrollRegis";
 import EnrollmentMain from "./pages/enrollment/EnrollmentMain";
+
 import StudentHome from "./pages/portal/student/Portal_Student_Home";
 import StudentProfile from "./pages/portal/student/Portal_Student_Profile";
+import StudentSubjects from "./pages/portal/student/Portal_Student_Subjects";
+import StudentGrades from "./pages/portal/student/Portal_Student_Grades";
+import StudentClearance from "./pages/portal/student/Portal_Student_Clearance";
+import StudentRequest from "./pages/portal/student/Portal_Student_Request";
 
+import TeacherHome from "./pages/portal/teacher/Portal_Teacher_Home";
+import TeacherProfile from "./pages/portal/teacher/Portal_Teacher_Profile";
+import TeacherTeachingLoad from "./pages/portal/teacher/Portal_Teacher_Load";
+import TeacherStudents from "./pages/portal/teacher/Portal_Teacher_Students";
+import TeacherGrade from "./pages/portal/teacher/Portal_Teacher_Grade";
+import TeacherClearance from "./pages/portal/teacher/Portal_Teacher_Clearance";
+
+import RegistrarHome from "./pages/portal/registrar/Portal_Registrar_Home";
+import RegistrarProfile from "./pages/portal/registrar/Portal_Registrar_Profile";
+import Portal_Registrar_Studlist from "./pages/portal/registrar/Portal_Registrar_Studlist";
+import Portal_Registrar_Doc from "./pages/portal/registrar/Portal_Registrar_Doc";
+import Portal_Registrar_Req from "./pages/portal/registrar/Portal_Registrar_Req";
 
 function App() {
     return (
@@ -18,9 +35,27 @@ function App() {
                 <Route path="/enrollment-main" element={<EnrollmentMain />} />
 
                 <Route path="/Portal_Student_Home" element={<StudentHome />} />
-                <Route path="/Portal_Student_Profile" element={<StudentProfile />}
+                <Route path="/Portal_Student_Profile" element={<StudentProfile />} />
+                <Route path="/Portal_Student_Subjects" element={<StudentSubjects />} />
+                <Route path="/Portal_Student_Grades" element={<StudentGrades />} />
+                <Route path="/Portal_Student_Clearance" element={<StudentClearance />} />
+                <Route path="/Portal_Student_Request" element={<StudentRequest />} />
 
-/>
+                <Route path="/Portal_Teacher_Home" element={<TeacherHome />} />
+                <Route path="/Portal_Teacher_Profile" element={<TeacherProfile />} />
+                <Route path="/Portal_Teacher_Load" element={<TeacherTeachingLoad />} />
+                <Route path="/Portal_Teacher_Students" element={<TeacherStudents />} />
+                <Route path="/Portal_Teacher_Grade" element={<TeacherGrade />} />
+                <Route path="/Portal_Teacher_Clearance" element={<TeacherClearance />} 
+
+
+
+
+                <Route path="/Portal_Registrar_Home" element={<RegistrarHome />} />
+                <Route path="/Portal_Registrar_Profile" element={<RegistrarProfile />} />
+                <Route path="/Portal_Registrar_Studlist" element={<Portal_Registrar_Studlist />} />
+                <Route path="/Portal_Registrar_Doc" element={<Portal_Registrar_Doc />} />
+                <Route path="/Portal_Registrar_Req" element={<Portal_Registrar_Req />} />
             </Routes>
         </BrowserRouter>
     );

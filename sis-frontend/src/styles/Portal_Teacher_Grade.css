@@ -1,0 +1,219 @@
+.teacher-grade-layout {
+  min-height: 100vh;
+  width: 90%;
+  margin-left: auto;
+  display: flex;
+  background: #ffffff;
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+}
+
+.teacher-grade-main {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 35px 18px 22px;
+  box-sizing: border-box;
+}
+
+.teacher-grade-header {
+  margin-bottom: 20px;
+}
+
+.teacher-grade-header h1 {
+  margin: 0;
+  color: #080808;
+  font-size: 29px;
+  font-weight: 700;
+}
+
+.teacher-grade-header p {
+  margin: 0;
+  font-size: 18px;
+}
+
+.teacher-grade-panel {
+  width: 100%;
+  border: 1px solid #4d8df3;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.teacher-grade-student-info {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 27px 15px 15px;
+}
+
+.teacher-grade-student-info div {
+  min-height: 57px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 20px;
+  border-right: 1px solid #4d8df3;
+}
+
+.teacher-grade-student-info div:last-child {
+  border-right: none;
+}
+
+.teacher-grade-student-info span {
+  font-size: 9px;
+  color: #111;
+}
+
+.teacher-grade-student-info strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.teacher-grade-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 14px 15px;
+  gap: 10px;
+}
+
+.teacher-grade-controls button {
+  height: 29px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  border-radius: 6px;
+  background: #2d75d9;
+  color: white;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.teacher-grade-clearance-button {
+  width: 142px;
+}
+
+.teacher-grade-right-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.teacher-grade-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.teacher-grade-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #2d75d9;
+  color: #ffffff;
+}
+
+.teacher-grade-table th,
+.teacher-grade-table td {
+  height: 36px;
+  padding: 5px 14px;
+  text-align: center;
+  font-size: 11px;
+}
+
+.teacher-grade-table th:first-child,
+.teacher-grade-table td:first-child {
+  text-align: left;
+}
+
+.teacher-grade-table th {
+  font-weight: 500;
+}
+
+.teacher-grade-table td {
+  font-weight: 500;
+}
+
+.teacher-grade-table input {
+  width: 48px;
+  padding: 4px;
+  border: none;
+  border-radius: 4px;
+  text-align: center;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.teacher-grade-average-row {
+  font-weight: 700;
+}
+
+.teacher-grade-average-row td {
+  height: 47px;
+}
+
+.teacher-grade-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 5px;
+}
+
+.teacher-grade-footer > div {
+  display: flex;
+  gap: 12px;
+}
+
+.teacher-grade-footer button {
+  height: 30px;
+  min-width: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.teacher-grade-back-button,
+.teacher-grade-save-button {
+  border: none;
+  background: #2d75d9;
+  color: white;
+}
+
+.teacher-grade-undo-button {
+  border: 1px solid #4d8df3;
+  background: white;
+  color: #2d75d9;
+}
+
+@media (max-width: 750px) {
+  .teacher-grade-layout {
+    width: 100%;
+  }
+
+  .teacher-grade-main {
+    padding: 65px 12px 20px;
+  }
+
+  .teacher-grade-student-info {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 15px;
+  }
+
+  .teacher-grade-student-info div:nth-child(2) {
+    border-right: none;
+  }
+
+  .teacher-grade-controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .teacher-grade-table {
+    min-width: 650px;
+  }
+}

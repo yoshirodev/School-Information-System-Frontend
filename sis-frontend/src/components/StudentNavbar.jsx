@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 
-import "../styles/Portal_Student_Home.css";
+import "../styles/StudentNavbar.css";
 import schoolLogo from "../assets/t_logo.png";
 
 const navigationItems = [
