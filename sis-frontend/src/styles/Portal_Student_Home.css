@@ -36,6 +36,7 @@ body,
   min-height: 100vh;
   background: var(--portal-blue);
   color: #fff;
+
 }
 
 .sidebar-brand {

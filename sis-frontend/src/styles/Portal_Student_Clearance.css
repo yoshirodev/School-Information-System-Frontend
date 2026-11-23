@@ -10,20 +10,17 @@
   justify-content: center;
 }
 
-/* Main Content - Space for StudentNavbar */
-
 .student-clearance-main {
-  width: calc(100% - 182px);
+  width: 100%;
   min-width: 0;
   min-height: 100vh;
-  margin-left: 182px;
-  padding: 14px 33px 27px 38px;
+  padding: 12px 36px 30px;
   box-sizing: border-box;
   background: #ffffff;
 }
 
 .student-clearance-header {
-  margin-bottom: 19px;
+  margin-bottom: 22px;
 }
 
 .student-clearance-header h1 {
@@ -31,7 +28,7 @@
   color: #080808;
   font-size: 29px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .student-clearance-header p {
@@ -46,11 +43,10 @@
 
 .student-clearance-card {
   width: 100%;
-  max-width: 781px;
   min-height: 615px;
   overflow: hidden;
-  border: 1px solid #7da9ed;
-  border-radius: 7px;
+  border: 1px solid #4d8df3;
+  border-radius: 9px;
   background: #ffffff;
   box-sizing: border-box;
 }
@@ -62,7 +58,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   align-items: center;
-  padding: 20px 0 12px;
+  padding: 20px 16px 12px;
   box-sizing: border-box;
 }
 
@@ -75,7 +71,7 @@
   justify-content: center;
   gap: 22px;
   padding: 0 8px;
-  border-right: 1px solid #78a6f2;
+  border-right: 1px solid #4d8df3;
   text-align: center;
 }
 
@@ -97,13 +93,13 @@
   overflow-wrap: anywhere;
 }
 
-/* School Year Selector */
+/* Controls */
 
 .student-clearance-controls {
-  height: 50px;
+  min-height: 50px;
   display: flex;
   align-items: center;
-  padding: 0 14px;
+  padding: 0 16px 12px;
   box-sizing: border-box;
 }
 
@@ -231,27 +227,25 @@
   line-height: 1.5;
 }
 
-/* Responsive Layout */
+/* Responsive */
 
-@media (max-width: 850px) {
-  .student-clearance-main {
+@media (max-width: 950px) {
+  .student-clearance-layout {
     width: 100%;
-    margin-left: 0;
-    padding: 65px 20px 30px;
   }
 
-  .student-clearance-card {
-    max-width: 100%;
+  .student-clearance-main {
+    padding: 65px 18px 25px;
   }
 }
 
 @media (max-width: 600px) {
   .student-clearance-main {
-    padding: 60px 12px 25px;
+    padding: 60px 12px 20px;
   }
 
   .student-clearance-header h1 {
-    font-size: 25px;
+    font-size: 24px;
   }
 
   .student-clearance-header p {
@@ -261,7 +255,7 @@
   .student-clearance-information {
     grid-template-columns: repeat(2, 1fr);
     row-gap: 15px;
-    padding: 18px 0;
+    padding: 18px 12px;
   }
 
   .student-clearance-info-item {

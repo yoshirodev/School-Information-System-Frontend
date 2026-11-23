@@ -1,29 +1,26 @@
 
 .student-request-layout {
   min-height: 100vh;
-  width: 100%;
+  width: 90%;
   display: flex;
   background: #ffffff;
   font-family: "Poppins", sans-serif;
   box-sizing: border-box;
+  margin-left: auto;
+  justify-content: center;
 }
 
-/* Main Content - Space for StudentNavbar */
-
 .student-request-main {
-  width: calc(100% - 178px);
+  width: 100%;
   min-width: 0;
   min-height: 100vh;
-  margin-left: 178px;
-  padding: 8px 14px 12px 13px;
+  padding: 12px 36px 30px;
   box-sizing: border-box;
   background: #ffffff;
 }
 
 .student-request-header {
-  margin-bottom: 7px;
-  margin-left: 30px;
-  
+  margin-bottom: 22px;
 }
 
 .student-request-header h1 {
@@ -31,7 +28,7 @@
   color: #080808;
   font-size: 29px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .student-request-header p {
@@ -44,18 +41,15 @@
 /* Main Blue Panel */
 
 .student-request-panel {
-  width: 1300px;
-  max-width: calc(100% - 30px);
+  width: 100%;
   min-height: 650px;
   display: grid;
   grid-template-columns: 275px minmax(0, 1fr);
   overflow: hidden;
+  border: 1px solid #4d8df3;
   border-radius: 9px;
   background: #2d75d9;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
-  margin-left: 30px;
   box-sizing: border-box;
-  margin: auto;
 }
 
 /* Available Document Cards */
@@ -482,18 +476,19 @@
   text-align: center;
 }
 
-/* Responsive Layout */
+/* Responsive */
 
 @media (max-width: 950px) {
-  .student-request-main {
+  .student-request-layout {
     width: 100%;
-    margin-left: 0;
+  }
+
+  .student-request-main {
     padding: 65px 18px 25px;
   }
 
   .student-request-panel {
-    width: calc(100% - 30px);
-    max-width: none;
+    grid-template-columns: 230px minmax(0, 1fr);
   }
 
   .student-request-documents {
@@ -516,9 +511,6 @@
   }
 
   .student-request-panel {
-    width: 100%;
-    max-width: 100%;
-    margin-left: 0;
     grid-template-columns: 1fr;
   }
 
@@ -541,5 +533,9 @@
 
   .student-request-table-wrapper {
     overflow-x: auto;
+  }
+
+  .student-request-table {
+    min-width: 550px;
   }
 }

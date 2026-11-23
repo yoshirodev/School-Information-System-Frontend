@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 
-import StudentNavbar from "../../../components/StudentNavbar";
+import TeacherNavbar from "../../../components/TeacherNavbar";
 import "../../../styles/Portal_Student_Home.css";
 
 // Sample content transcribed from the supplied dashboard screenshot.
@@ -21,8 +21,6 @@ const defaultStudent = {
   position: "Teacher III",
   advisoryClass: "9 - Bayani Agbayani",
   schoolYear: "2026-2027",
-  course: "Junior High School",
-  graduating: false,
 };
 
 const defaultAnnouncements = [
@@ -159,7 +157,7 @@ export default function StudentHome({
     <div className="student-portal">
 
       {/* Reusable Student Navbar */}
-      <StudentNavbar
+      <TeacherNavbar
         activePage={activePage}
         onNavigate={navigate}
         onLogout={onLogout}

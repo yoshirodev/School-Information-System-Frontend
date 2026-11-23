@@ -13,6 +13,11 @@ import StudentClearance from "./pages/portal/student/Portal_Student_Clearance";
 import StudentRequest from "./pages/portal/student/Portal_Student_Request";
 
 import TeacherHome from "./pages/portal/teacher/Portal_Teacher_Home";
+import TeacherProfile from "./pages/portal/teacher/Portal_Teacher_Profile";
+import TeacherTeachingLoad from "./pages/portal/teacher/Portal_Teacher_Load";
+import TeacherStudents from "./pages/portal/teacher/Portal_Teacher_Students";
+import TeacherGrade from "./pages/portal/teacher/Portal_Teacher_Grade";
+import TeacherClearance from "./pages/portal/teacher/Portal_Teacher_Clearance";
 
 
 function App() {
@@ -31,7 +36,12 @@ function App() {
                 <Route path="/Portal_Student_Clearance" element={<StudentClearance />} />
                 <Route path="/Portal_Student_Request" element={<StudentRequest />} />
 
-                <Route path="/Portal_Teacher_Home" element={<TeacherHome />}
+                <Route path="/Portal_Teacher_Home" element={<TeacherHome />} />
+                <Route path="/Portal_Teacher_Profile" element={<TeacherProfile />} />
+                <Route path="/Portal_Teacher_Load" element={<TeacherTeachingLoad />} />
+                <Route path="/Portal_Teacher_Students" element={<TeacherStudents />} />
+                <Route path="/Portal_Teacher_Grade" element={<TeacherGrade />} />
+                <Route path="/Portal_Teacher_Clearance" element={<TeacherClearance />} 
 
 
 

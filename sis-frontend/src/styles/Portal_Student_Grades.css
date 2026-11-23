@@ -1,6 +1,6 @@
 
 .student-grades-layout {
- min-height: 100vh;
+  min-height: 100vh;
   width: 90%;
   display: flex;
   background: #ffffff;
@@ -10,20 +10,17 @@
   justify-content: center;
 }
 
-/* Main Content - Space for StudentNavbar */
-
 .student-grades-main {
-  width: calc(100% - 187px);
+  width: 100%;
   min-width: 0;
   min-height: 100vh;
-  margin-left: 187px;
-  padding: 14px 33px 27px 36px;
+  padding: 12px 36px 30px;
   box-sizing: border-box;
   background: #ffffff;
 }
 
 .student-grades-header {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .student-grades-header h1 {
@@ -31,7 +28,7 @@
   color: #080808;
   font-size: 29px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .student-grades-header p {
@@ -46,11 +43,10 @@
 
 .student-grades-card {
   width: 100%;
-  max-width: 781px;
   min-height: 615px;
   overflow: hidden;
-  border: 1px solid #7da9ed;
-  border-radius: 7px;
+  border: 1px solid #4d8df3;
+  border-radius: 9px;
   background: #ffffff;
   box-sizing: border-box;
 }
@@ -58,11 +54,9 @@
 /* Student Information */
 
 .student-grades-information {
-  min-height: 105px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  align-items: center;
-  padding: 20px 0 12px;
+  padding: 30px 16px 18px;
   box-sizing: border-box;
 }
 
@@ -75,7 +69,7 @@
   justify-content: center;
   gap: 22px;
   padding: 0 8px;
-  border-right: 1px solid #78a6f2;
+  border-right: 1px solid #4d8df3;
   text-align: center;
 }
 
@@ -100,11 +94,11 @@
 /* Controls */
 
 .student-grades-controls {
-  height: 50px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 11px 0 14px;
+  padding: 0 16px 12px;
   box-sizing: border-box;
 }
 
@@ -236,27 +230,25 @@
   white-space: normal !important;
 }
 
-/* Responsive Layout */
+/* Responsive */
 
-@media (max-width: 850px) {
-  .student-grades-main {
+@media (max-width: 950px) {
+  .student-grades-layout {
     width: 100%;
-    margin-left: 0;
-    padding: 65px 20px 30px;
   }
 
-  .student-grades-card {
-    max-width: 100%;
+  .student-grades-main {
+    padding: 65px 18px 25px;
   }
 }
 
 @media (max-width: 600px) {
   .student-grades-main {
-    padding: 60px 12px 25px;
+    padding: 60px 12px 20px;
   }
 
   .student-grades-header h1 {
-    font-size: 25px;
+    font-size: 24px;
   }
 
   .student-grades-header p {
@@ -266,7 +258,7 @@
   .student-grades-information {
     grid-template-columns: repeat(2, 1fr);
     row-gap: 15px;
-    padding: 18px 0;
+    padding: 18px 12px;
   }
 
   .student-grades-info-item {
@@ -288,6 +280,10 @@
 
   .student-grades-controls {
     gap: 8px;
+  }
+
+  .student-grades-select-wrapper {
+    width: 135px;
   }
 
   .student-grades-download-button {
@@ -319,6 +315,11 @@
     display: none !important;
   }
 
+  .student-grades-layout {
+    width: 100%;
+    margin: 0;
+  }
+
   .student-grades-main {
     width: 100%;
     margin: 0;
@@ -326,7 +327,6 @@
   }
 
   .student-grades-card {
-    max-width: none;
     border: 1px solid #777777;
   }
 
