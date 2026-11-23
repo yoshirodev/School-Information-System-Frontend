@@ -40,6 +40,16 @@ export default function RegistrarNavbar({
     onLogout?.();
   };
 
+  const handleLogout = () => {
+    setMenuOpen(false);
+
+    if (onLogout) {
+      onLogout();
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <>
       <aside
@@ -84,7 +94,7 @@ export default function RegistrarNavbar({
           <button
             type="button"
             className="sidebar-link sidebar-logout"
-            onClick={logout}
+            onClick={handleLogout}
           >
             <LogOut size={21} strokeWidth={1.9} />
             <span>Log Out</span>

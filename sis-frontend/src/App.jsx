@@ -46,10 +46,7 @@ function App() {
                 <Route path="/Portal_Teacher_Load" element={<TeacherTeachingLoad />} />
                 <Route path="/Portal_Teacher_Students" element={<TeacherStudents />} />
                 <Route path="/Portal_Teacher_Grade" element={<TeacherGrade />} />
-                <Route path="/Portal_Teacher_Clearance" element={<TeacherClearance />} 
-
-
-
+                <Route path="/Portal_Teacher_Clearance" element={<TeacherClearance />} />
 
                 <Route path="/Portal_Registrar_Home" element={<RegistrarHome />} />
                 <Route path="/Portal_Registrar_Profile" element={<RegistrarProfile />} />
