@@ -1,0 +1,256 @@
+
+.student-subjects-layout {
+  min-height: 100vh;
+  width: 90%;
+  display: flex;
+  background: #ffffff;
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+  margin-left: auto;
+  justify-content: center;
+}
+
+/* Main Content - Leave space for StudentNavbar */
+
+.student-subjects-main {
+  width: calc(100% - 184px);
+  min-width: 0;
+  min-height: 100vh;
+  margin-left: 184px;
+  padding: 14px 33px 30px 36px;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.student-subjects-header {
+  margin-bottom: 20px;
+}
+
+.student-subjects-header h1 {
+  margin: 0;
+  color: #080808;
+  font-size: 29px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.student-subjects-header p {
+  margin: 0;
+  color: #111111;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Main Subjects Card */
+
+.student-subjects-card {
+  width: 100%;
+  max-width: 780px;
+  min-height: 615px;
+  overflow: hidden;
+  border: 1px solid #7da9ed;
+  border-radius: 7px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* Student Information */
+
+.student-subjects-information {
+  min-height: 105px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  padding: 20px 0 12px;
+  box-sizing: border-box;
+}
+
+.student-subjects-info-item {
+  min-width: 0;
+  min-height: 62px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 0 8px;
+  border-right: 1px solid #78a6f2;
+  text-align: center;
+}
+
+.student-subjects-info-item:last-child {
+  border-right: none;
+}
+
+.student-subjects-info-item span {
+  color: #111111;
+  font-size: 8px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.student-subjects-info-item strong {
+  color: #111111;
+  font-size: 11px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* School Year Selector */
+
+.student-subjects-controls {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  box-sizing: border-box;
+}
+
+.student-subjects-select-wrapper {
+  position: relative;
+  width: 157px;
+  height: 32px;
+}
+
+.student-subjects-select-wrapper select {
+  width: 100%;
+  height: 100%;
+  appearance: none;
+  padding: 0 30px 0 12px;
+  border: none;
+  border-radius: 6px;
+  outline: none;
+  background: #2d75d9;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.student-subjects-select-wrapper select option {
+  background: #ffffff;
+  color: #111111;
+}
+
+.student-subjects-select-wrapper svg {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #ffffff;
+  pointer-events: none;
+}
+
+/* Subjects Table */
+
+.student-subjects-table-wrapper {
+  width: 100%;
+  min-height: 458px;
+  overflow-x: auto;
+  border-radius: 6px;
+  background: #2d75d9;
+}
+
+.student-subjects-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #2d75d9;
+  color: #ffffff;
+}
+
+.student-subjects-table thead {
+  height: 43px;
+}
+
+.student-subjects-table th {
+  padding: 10px 12px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.student-subjects-table tbody tr {
+  height: 41px;
+}
+
+.student-subjects-table td {
+  padding: 9px 16px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.student-subjects-table th:first-child,
+.student-subjects-table td:first-child {
+  text-align: left;
+  padding-left: 17px;
+}
+
+.student-subjects-empty {
+  height: 100px;
+  text-align: center !important;
+  white-space: normal !important;
+}
+
+/* Responsive Layout */
+
+@media (max-width: 850px) {
+  .student-subjects-main {
+    width: 100%;
+    margin-left: 0;
+    padding: 65px 20px 30px;
+  }
+
+  .student-subjects-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .student-subjects-main {
+    padding: 60px 12px 25px;
+  }
+
+  .student-subjects-header h1 {
+    font-size: 25px;
+  }
+
+  .student-subjects-header p {
+    font-size: 15px;
+  }
+
+  .student-subjects-information {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 15px;
+    padding: 18px 0;
+  }
+
+  .student-subjects-info-item {
+    min-height: 55px;
+    gap: 10px;
+  }
+
+  .student-subjects-info-item:nth-child(2) {
+    border-right: none;
+  }
+
+  .student-subjects-info-item span {
+    font-size: 8px;
+  }
+
+  .student-subjects-info-item strong {
+    font-size: 10px;
+  }
+
+  .student-subjects-table-wrapper {
+    min-height: 400px;
+  }
+}
