@@ -1,8 +1,8 @@
 const navigationLinks = [
   { label: "Home", href: "/" },
   { label: "Admission", href: "/enroll" },
-  { label: "Programs", href: "#programs" },
-  { label: "About MMNHS", href: "#about" },
+  { label: "Programs", href: "/programs" },
+  { label: "About MMNHS", href: "/about" },
   { label: "Portal", href: "/login" },
 ];
 
