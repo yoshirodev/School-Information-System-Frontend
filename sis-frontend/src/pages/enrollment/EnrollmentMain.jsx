@@ -1,11 +1,14 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
     jhsSections,
     shsSections,
     getJhsSubjects,
 } from "../../data/jhsEnrollmentData";
+import { shsEnrollmentData } from "../../data/shsEnrollmentData";
+
 import Navbar from "../../components/Navbar";
 import bgmain from "../../assets/bgmain.png";
 import nontLogo from "../../assets/nont_logo.png";
@@ -108,7 +111,15 @@ export default function EnrollmentMain() {
         // Step 12: Consent
         preferredLearningModalities: [],
         consentToDataProcessing: "",
+
+        // Senior High School Enrollment
+        shsSelectedElectives: [],
     });
+
+    // SHS elective selection popup
+    const [isShsModalOpen, setIsShsModalOpen] = useState(false);
+    const [activeShsCluster, setActiveShsCluster] = useState("");
+    const [activeShsTrack, setActiveShsTrack] = useState("academic");
 
     // Step 14: Document Upload
     const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -523,6 +534,94 @@ export default function EnrollmentMain() {
         return Object.keys(newErrors).length === 0;
     };
 
+    // Get the clusters based on the selected SHS track
+    const getSelectedShsClusters = () => {
+        return [
+            ...shsEnrollmentData.tracks.academic.clusters.map((cluster) => ({
+                ...cluster,
+                trackId: "academic",
+                trackName: "Academic Track",
+            })),
+
+            ...shsEnrollmentData.tracks.techPro.clusters.map((cluster) => ({
+                ...cluster,
+                trackId: "techPro",
+                trackName: "Technical-Professional Track",
+            })),
+        ];
+    };
+
+    // Check whether an elective is already selected
+    const isShsElectiveSelected = (clusterId, subject) => {
+        return formData.shsSelectedElectives.some(
+            (item) =>
+                item.clusterId === clusterId &&
+                item.subject === subject
+        );
+    };
+    // Add or remove an elective
+    const toggleShsElective = (clusterId, subject) => {
+        setFormData((prev) => {
+            const alreadySelected = prev.shsSelectedElectives.some(
+                (item) =>
+                    item.clusterId === clusterId &&
+                    item.subject === subject
+            );
+
+            return {
+                ...prev,
+                shsSelectedElectives: alreadySelected
+                    ? prev.shsSelectedElectives.filter(
+                        (item) =>
+                            !(
+                                item.clusterId === clusterId &&
+                                item.subject === subject
+                            )
+                    )
+                    : [
+                        ...prev.shsSelectedElectives,
+                        { clusterId, subject },
+                    ],
+            };
+        });
+
+        setErrors((prev) => ({
+            ...prev,
+            shsSelectedElectives: "",
+        }));
+    };
+
+    // Validate the SHS enrollment selection
+    const validateShsSelection = () => {
+        const newErrors = {};
+
+        if (formData.shsSelectedElectives.length < 2) {
+            newErrors.shsSelectedElectives =
+                "Please select at least 2 elective subjects.";
+        }
+
+        setErrors((prev) => ({
+            ...prev,
+            shsSelectedElectives: newErrors.shsSelectedElectives || "",
+        }));
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleShsTrackChange = (trackId) => {
+        setActiveShsTrack(trackId);
+
+        const firstCluster = getSelectedShsClusters().find(
+            (cluster) => cluster.trackId === trackId
+        );
+
+        if (firstCluster) {
+            setActiveShsCluster(firstCluster.id);
+        }
+
+        setIsShsModalOpen(true);
+    };
+
     // Next button
     const handleNext = (e) => {
         e.preventDefault();
@@ -650,7 +749,9 @@ export default function EnrollmentMain() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 16:
-                // SHS enrollment page → final submission
+                // Validate SHS track and elective selections
+                if (!validateShsSelection()) return;
+
                 setCurrentStep(17);
                 setStatus("");
                 setErrors({});
@@ -815,8 +916,8 @@ export default function EnrollmentMain() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 15:
-                setCurrentStep(17);
-                // ...
+                setCurrentStep(14);
+                window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 16:
                 setCurrentStep(14);
@@ -954,9 +1055,9 @@ export default function EnrollmentMain() {
     const progressStep =
         currentStep <= 13 ? 1 :
         currentStep === 14 ? 2 :
-        currentStep === 15 ? 3 :
+        currentStep === 15 || currentStep === 16 ? 3 :
         4;
-        
+            
     return (
         <div className="relative bg-white min-h-screen w-full overflow-x-hidden">
 
@@ -4259,6 +4360,542 @@ export default function EnrollmentMain() {
 
                 </main>
             )}
+
+            {/* ==============================
+                SCREEN 16: SENIOR HIGH SCHOOL ENROLLMENT
+            ============================== */}
+
+            {currentStep === 16 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1100px] px-5 sm:px-10 py-8">
+
+                        {/* HEADER */}
+                        <div className="mb-8">
+                            <p className="text-[#2B75D8] font-poppins text-sm font-medium mb-2">
+                                SENIOR HIGH SCHOOL
+                            </p>
+
+                            <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold">
+                                Enrollment Information
+                            </h1>
+
+                            <p className="text-gray-500 font-poppins text-sm mt-2">
+                                Strengthened Senior High School Curriculum
+                                {" "}· School Year 2026–2027
+                            </p>
+                        </div>
+
+                        {/* STUDENT INFORMATION */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <h2 className="text-gray-800 font-poppins font-semibold text-lg mb-5">
+                                Student Information
+                            </h2>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Learner Reference Number
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        {formData.lrn || "Not provided"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Student Name
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        {[
+                                            formData.firstName,
+                                            formData.middleName,
+                                            formData.lastName,
+                                            formData.extensionName,
+                                        ].filter(Boolean).join(" ") || "Not provided"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Grade Level
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        Grade {formData.gradeLevel}
+                                    </p>
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                        {/* CORE SUBJECTS */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                        Core Subjects
+                                    </h2>
+                                    <p className="text-gray-500 font-poppins text-sm mt-1">
+                                        These subjects are automatically included.
+                                    </p>
+                                </div>
+
+                                <span className="bg-blue-50 text-[#2B75D8] rounded-full px-3 py-2 text-xs font-poppins font-semibold">
+                                    6 Subjects
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {shsEnrollmentData.coreSubjects.map((subject, index) => (
+                                    <div
+                                        key={subject}
+                                        className="flex items-center gap-3 bg-gray-50 rounded-lg p-3"
+                                    >
+                                        <span className="w-7 h-7 shrink-0 rounded-full bg-blue-100 text-[#2B75D8] flex items-center justify-center text-xs font-semibold">
+                                            {index + 1}
+                                        </span>
+
+                                        <span className="text-gray-700 font-poppins text-sm">
+                                            {subject}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                        </section>
+
+                        {/* TRACK SELECTION */}
+                        <section className="mb-7">
+
+                            <h2 className="text-gray-800 font-poppins font-semibold text-lg mb-2">
+                                Select Your SHS Track
+                            </h2>
+
+                            <p className="text-gray-500 font-poppins text-sm mb-5">
+                                Choose a track to explore its available elective clusters.
+                                You can select electives from both tracks.
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                                {/* ACADEMIC TRACK */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleShsTrackChange("academic")}
+                                    className="text-left border-2 border-gray-200 rounded-xl p-5 transition hover:border-[#2B75D8] hover:bg-blue-50"
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-gray-800 font-poppins font-semibold text-lg">
+                                            Academic Track
+                                        </h3>
+
+                                        <span className={` ${
+                                            formData.shsTrack === "academic"
+                                                ? "border-[#2B75D8]"
+                                                : "border-gray-300"
+                                        }`}>
+                                            {formData.shsTrack === "academic" && (
+                                                <span className="w-2.5 h-2.5 rounded-full bg-[#2B75D8]" />
+                                            )}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-gray-500 font-poppins text-sm">
+                                        Focuses on academic learning through
+                                        different subject clusters.
+                                    </p>
+                                </button>
+
+                                {/* TECH-PRO TRACK */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleShsTrackChange("techPro")}
+                                    className="text-left border-2 border-gray-200 rounded-xl p-5 transition hover:border-[#2B75D8] hover:bg-blue-50"
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-gray-800 font-poppins font-semibold text-lg">
+                                            Technical-Professional Track
+                                        </h3>
+
+                                        <span className={`${
+                                            formData.shsTrack === "techPro"
+                                                ? "border-[#2B75D8]"
+                                                : "border-gray-300"
+                                        }`}>
+                                            {formData.shsTrack === "techPro" && (
+                                                <span className="w-2.5 h-2.5 rounded-full bg-[#2B75D8]" />
+                                            )}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-gray-500 font-poppins text-sm">
+                                        Focuses on technical and professional
+                                        subject clusters.
+                                    </p>
+                                </button>
+
+                            </div>
+                        </section>
+
+                        {/* ELECTIVE SELECTION */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                                <div>
+                                    <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                        Elective Subjects
+                                    </h2>
+
+                                    <p className="text-gray-500 font-poppins text-sm mt-1">
+                                        Select at least 2 electives from your preferred subject clusters.
+                                    </p>
+                                </div>
+
+                                <span className="bg-blue-50 text-[#2B75D8] rounded-full px-4 py-2 text-xs font-poppins font-semibold self-start">
+                                    {formData.shsSelectedElectives.length} Selected
+                                </span>
+
+                            </div>
+
+                            {/* SELECTED ELECTIVES SUMMARY */}
+                            {formData.shsSelectedElectives.length > 0 && (
+                                <div className="mt-6 space-y-4">
+
+                                    {getSelectedShsClusters().map((cluster) => {
+
+                                        const clusterSelections =
+                                            formData.shsSelectedElectives.filter(
+                                                (item) => item.clusterId === cluster.id
+                                            );
+
+                                        if (clusterSelections.length === 0) return null;
+
+                                        return (
+                                            <div
+                                                key={cluster.id}
+                                                className="border border-gray-200 rounded-lg p-4"
+                                            >
+
+                                                {/* TRACK NAME */}
+                                                <p className="text-gray-400 font-poppins text-xs mb-1">
+                                                    {cluster.trackName}
+                                                </p>
+
+                                                {/* CLUSTER NAME */}
+                                                <h3 className="text-[#2B75D8] font-poppins font-semibold text-sm mb-3">
+                                                    {cluster.name}
+                                                </h3>
+
+                                                {/* SELECTED SUBJECTS */}
+                                                <div className="space-y-2">
+
+                                                    {clusterSelections.map((item) => (
+                                                        <div
+                                                            key={`${item.clusterId}-${item.subject}`}
+                                                            className="flex items-center justify-between gap-3"
+                                                        >
+
+                                                            <span className="text-gray-700 text-sm font-poppins">
+                                                                {item.subject}
+                                                            </span>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    toggleShsElective(
+                                                                        item.clusterId,
+                                                                        item.subject
+                                                                    )
+                                                                }
+                                                                className="text-red-500 text-xs font-poppins hover:underline shrink-0"
+                                                            >
+                                                                Remove
+                                                            </button>
+
+                                                        </div>
+                                                    ))}
+
+                                                </div>
+
+                                            </div>
+                                        );
+                                    })}
+
+                                </div>
+                            )}
+
+                            {errors.shsSelectedElectives && (
+                                <p className="text-red-500 text-sm font-poppins mt-3">
+                                    {errors.shsSelectedElectives}
+                                </p>
+                            )}
+
+                            <div className="bg-blue-50 rounded-lg p-4 mt-5">
+                                <p className="text-[#2B75D8] font-poppins text-sm font-semibold mb-1">
+                                    Selection Requirements
+                                </p>
+
+                                <p className="text-gray-600 font-poppins text-xs leading-5">
+                                    Select at least 2 elective subjects. You may combine subjects
+                                    from Academic and Technical-Professional tracks or choose
+                                    all your electives from the same track.
+                                </p>
+                            </div>
+
+                        </section>
+
+                        {/* NAVIGATION */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+
+                            <button
+                                type="button"
+                                onClick={handleBack}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] hover:bg-blue-50 transition"
+                            >
+                                Back
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleNext}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] hover:bg-[#2164bd] transition"
+                            >
+                                Continue
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </main>
+            )}
+
+            {/* ==============================
+                SHS ELECTIVE SELECTION MODAL
+            ============================== */}
+
+            {currentStep === 16 && isShsModalOpen && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-3 py-5 sm:px-6"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setIsShsModalOpen(false);
+                        }
+                    }}
+                >
+
+                    <div
+                        className="bg-white w-full max-w-[900px] max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="shs-modal-title"
+                    >
+
+                        {/* MODAL HEADER */}
+                        <div className="flex items-center justify-between gap-4 p-5 sm:p-6 border-b border-gray-200">
+
+                            <div>
+                                <h2
+                                    id="shs-modal-title"
+                                    className="text-[#2B75D8] font-poppins font-semibold text-lg sm:text-xl"
+                                >
+                                    Select Elective Subjects
+                                </h2>
+
+                                <p className="text-gray-500 font-poppins text-xs sm:text-sm mt-1">
+                                    Choose subjects from different clusters.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setIsShsModalOpen(false)}
+                                className="w-9 h-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 text-xl"
+                                aria-label="Close elective selection"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                        {/* MODAL CONTENT */}
+                        <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
+
+                            {/* CLUSTER NAVIGATION */}
+                            <aside className="md:w-[260px] shrink-0 bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200 p-4">
+
+                                <p className="text-gray-500 text-xs font-poppins font-semibold uppercase mb-3">
+                                    Available Clusters
+                                </p>
+
+                                <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-1">
+
+                                    {getSelectedShsClusters()
+                                        .filter((cluster) => cluster.trackId === activeShsTrack)
+                                        .map((cluster) => {
+                                        const count =
+                                            formData.shsSelectedElectives.filter(
+                                                (item) => item.clusterId === cluster.id
+                                            ).length;
+
+                                        return (
+                                            <button
+                                                key={cluster.id}
+                                                type="button"
+                                                onClick={() =>
+                                                    setActiveShsCluster(cluster.id)
+                                                }
+                                                className={`shrink-0 md:w-full text-left rounded-lg p-3 transition ${
+                                                    activeShsCluster === cluster.id
+                                                        ? "bg-[#2B75D8] text-white"
+                                                        : "bg-white text-gray-700 border border-gray-200 hover:border-blue-300"
+                                                }`}
+                                            >
+                                                <span className="block text-[10px] font-poppins opacity-75 mb-1">
+                                                    {cluster.trackName}
+                                                </span>
+
+                                                <span className="block text-xs sm:text-sm font-poppins font-semibold">
+                                                    {cluster.name}
+                                                </span>
+
+                                                <span className={`block text-[11px] font-poppins mt-1 ${
+                                                    activeShsCluster === cluster.id
+                                                        ? "text-blue-100"
+                                                        : "text-gray-400"
+                                                }`}>
+                                                    {count} selected
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+
+                                </div>
+
+                            </aside>
+
+                            {/* SUBJECT LIST */}
+                            <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6">
+
+                                    {getSelectedShsClusters()
+                                        .filter(
+                                            (cluster) =>
+                                                cluster.trackId === activeShsTrack &&
+                                                cluster.id === activeShsCluster
+                                        )
+                                        .map((cluster) => (
+                                        <div key={cluster.id}>
+
+                                            <div className="mb-5">
+                                                <h3 className="text-gray-800 font-poppins font-semibold text-lg">
+                                                    {cluster.name}
+                                                </h3>
+
+                                                <p className="text-gray-500 font-poppins text-xs mt-1">
+                                                    Select all the subjects you want from this cluster.
+                                                </p>
+                                            </div>
+
+                                            <div className="space-y-2">
+
+                                                {cluster.electives.map((subject) => {
+                                                    const selected =
+                                                        isShsElectiveSelected(
+                                                            cluster.id,
+                                                            subject
+                                                        );
+
+                                                    return (
+                                                        <label
+                                                            key={subject}
+                                                            className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition ${
+                                                                selected
+                                                                    ? "border-[#2B75D8] bg-blue-50"
+                                                                    : "border-gray-200 hover:bg-gray-50"
+                                                            }`}
+                                                        >
+
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selected}
+                                                                onChange={() =>
+                                                                    toggleShsElective(
+                                                                        cluster.id,
+                                                                        subject
+                                                                    )
+                                                                }
+                                                                className="w-4 h-4 mt-1 accent-[#2B75D8] shrink-0"
+                                                            />
+
+                                                            <span className="text-gray-700 font-poppins text-sm">
+                                                                {subject}
+                                                            </span>
+
+                                                        </label>
+                                                    );
+                                                })}
+
+                                            </div>
+
+                                        </div>
+                                    ))}
+
+                            </div>
+
+                        </div>
+
+                        {/* MODAL FOOTER */}
+                        <div className="border-t border-gray-200 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                            <div>
+                                <p className="text-gray-800 font-poppins font-semibold text-sm">
+                                    {formData.shsSelectedElectives.length} electives selected
+                                </p>
+
+                                <p className="text-gray-500 font-poppins text-xs mt-1">
+                                    You can combine electives from different tracks.
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3">
+
+                                <button
+                                    type="button"
+                                    onClick={() => setIsShsModalOpen(false)}
+                                    className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-poppins text-sm hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={formData.shsSelectedElectives.length < 2}
+                                    onClick={() => {
+                                        setIsShsModalOpen(false);
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            shsSelectedElectives: "",
+                                        }));
+                                    }}
+                                    className="px-5 py-2.5 rounded-lg bg-[#2B75D8] text-white font-poppins text-sm font-semibold hover:bg-[#2164bd] disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+                                >
+                                    Confirm Electives
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
+
 
         </div>
     );
