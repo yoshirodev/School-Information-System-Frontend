@@ -116,8 +116,33 @@ export default function EnrollmentMain() {
         { value: "12", label: "Grade 12" },
     ];
 
+    // Hard-coded barangays for Calabanga, Camarines Sur.
+    const barangays = [
+        "Balatasan", "Balombon", "Balongay", "Belen", "Bigaas", "Binaliw",
+        "Binanuaanan Grande", "Binanuaanan Pequeño", "Bonot-Santa Rosa",
+        "Burabod", "Cabanbanan", "Cagsao", "Camuning", "Comaguingking",
+        "Del Carmen", "Dominorog", "Fabrica", "Harobay", "La Purisima",
+        "Lugsad", "Manguiring", "Pagatpat", "Paolbo", "Pinada",
+        "Punta Tarawal", "Quinale", "Sabang", "Salvacion-Baybay",
+        "San Antonio", "San Antonio Poblacion", "San Bernardino",
+        "San Francisco", "San Isidro", "San Lucas", "San Miguel",
+        "San Pablo", "San Roque", "San Vicente", "Santa Cruz Poblacion",
+        "Santa Cruz Ratay", "Santa Isabel", "Santa Salud", "Santo Domingo",
+        "Santo Niño", "Siba-o", "Sibobo", "Sogod", "Tomagodtod",
+    ];
+    const MAX_NAME_LENGTH = 50;
+    const MAX_ADDRESS_LENGTH = 100;
+    const MAX_CONTACT_DIGITS = 12;
+
     // Update form fields
     const updateField = (name, value) => {
+        if (typeof value === "string") {
+            if (name === "lrn") value = value.replace(/\D/g, "").slice(0, 12);
+            else if (name.toLowerCase().includes("zipcode")) value = value.replace(/\D/g, "").slice(0, 4);
+            else if (name.toLowerCase().includes("contactnumber")) value = value.replace(/\D/g, "").slice(0, MAX_CONTACT_DIGITS);
+            else if (["lastName", "firstName", "middleName", "extensionName"].includes(name) || /Name$/.test(name)) value = value.slice(0, MAX_NAME_LENGTH);
+            else if (/Street$|placeOfBirth|province|municipalityCity|country|motherTongue/.test(name)) value = value.slice(0, MAX_ADDRESS_LENGTH);
+        }
         setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -164,11 +189,7 @@ export default function EnrollmentMain() {
             newErrors.firstName = "First name is required.";
         }
 
-        if (!formData.middleName.trim()) {
-            newErrors.middleName = "Middle name is required.";
-        }
-
-        // Extension name is optional.
+        // Middle name and extension name are optional.
 
         setErrors(newErrors);
 
@@ -244,50 +265,37 @@ export default function EnrollmentMain() {
 
     const validateGuardianInfo = () => {
         const newErrors = {};
-
-        const guardians = [
-            {
-                prefix: "father",
-                label: "Father",
-            },
-            {
-                prefix: "mother",
-                label: "Mother",
-            },
-            {
-                prefix: "guardian",
-                label: "Legal Guardian",
-            },
+        const people = [
+            { prefix: "father", label: "Father", optional: formData.fatherDeceased },
+            { prefix: "mother", label: "Mother", optional: formData.motherDeceased },
+            { prefix: "guardian", label: "Legal Guardian", optional: true },
         ];
 
-        guardians.forEach(({ prefix, label }) => {
-            if (!formData[`${prefix}LastName`].trim()) {
-                newErrors[`${prefix}LastName`] = `${label}'s last name is required.`;
-            }
+        people.forEach(({ prefix, label, optional }) => {
+            const lastName = formData[`${prefix}LastName`].trim();
+            const firstName = formData[`${prefix}FirstName`].trim();
+            const contact = formData[`${prefix}ContactNumber`].trim();
+            const hasAny = lastName || firstName || contact;
 
-            if (!formData[`${prefix}FirstName`].trim()) {
-                newErrors[`${prefix}FirstName`] = `${label}'s first name is required.`;
-            }
+            if (prefix === "guardian" && !hasAny) return;
+            if (optional && prefix !== "guardian" && !hasAny) return;
 
-            if (!formData[`${prefix}ContactNumber`].trim()) {
-                newErrors[`${prefix}ContactNumber`] = `${label}'s contact number is required.`;
-            } else if (
-                !/^[0-9+\-\s()]{7,20}$/.test(
-                    formData[`${prefix}ContactNumber`].trim()
-                )
-            ) {
-                newErrors[`${prefix}ContactNumber`] = "Please enter a valid contact number.";
+            if (!lastName) newErrors[`${prefix}LastName`] = `${label}'s last name is required.`;
+            if (!firstName) newErrors[`${prefix}FirstName`] = `${label}'s first name is required.`;
+            if (!formData[`${prefix}Deceased`]) {
+                if (!contact) newErrors[`${prefix}ContactNumber`] = `${label}'s contact number is required.`;
+                else if (!/^(09\d{9}|639\d{9})$/.test(contact)) {
+                    newErrors[`${prefix}ContactNumber`] = "Use 09XXXXXXXXX or 639XXXXXXXXX.";
+                }
             }
         });
 
         setErrors(newErrors);
-
         return Object.keys(newErrors).length === 0;
     };
 
-    const validateFatherAddress = () => {
+        const validateFatherAddress = () => {
         const newErrors = {};
-
         const requiredFields = {
             fatherHouseNoStreet: "House No. / Street",
             fatherSitioStreet: "Sitio / Street Name",
@@ -299,22 +307,17 @@ export default function EnrollmentMain() {
         };
 
         Object.entries(requiredFields).forEach(([field, label]) => {
-            if (!formData[field]?.trim()) {
-            newErrors[field] = `${label} is required.`;
-            }
+            if (!formData[field]?.trim()) newErrors[field] = `${label} is required.`;
         });
-
-        setErrors((prev) => ({
-            ...prev,
-            ...newErrors,
-        }));
-
+        if (formData.fatherZipCode.trim() && !/^\d{4}$/.test(formData.fatherZipCode)) {
+            newErrors.fatherZipCode = "ZIP code must contain exactly 4 digits.";
+        }
+        setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const validateMotherAddress = () => {
         const newErrors = {};
-
         const requiredFields = {
             motherHouseNoStreet: "House No. / Street",
             motherSitioStreet: "Sitio / Street Name",
@@ -326,20 +329,35 @@ export default function EnrollmentMain() {
         };
 
         Object.entries(requiredFields).forEach(([field, label]) => {
-            if (!formData[field]?.trim()) {
-                newErrors[field] = `${label} is required.`;
-            }
+            if (!formData[field]?.trim()) newErrors[field] = `${label} is required.`;
         });
-
-        if (
-            formData.motherZipCode.trim() &&
-            !/^\d{4}$/.test(formData.motherZipCode)
-        ) {
-            newErrors.motherZipCode = "Please enter a valid 4-digit ZIP code.";
+        if (formData.motherZipCode.trim() && !/^\d{4}$/.test(formData.motherZipCode)) {
+            newErrors.motherZipCode = "ZIP code must contain exactly 4 digits.";
         }
-
         setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
+        const validateGuardianAddress = () => {
+        const newErrors = {};
+        const fields = {
+            guardianHouseNoStreet: "House No. / Street",
+            guardianSitioStreet: "Sitio / Street Name",
+            guardianZipCode: "ZIP Code",
+            guardianBarangay: "Barangay",
+            guardianProvince: "Province",
+            guardianMunicipalityCity: "Municipality / City",
+            guardianCountry: "Country",
+        };
+        const hasAnyValue = Object.keys(fields).some((field) => formData[field]?.trim());
+        if (!hasAnyValue) return true;
+        Object.entries(fields).forEach(([field, label]) => {
+            if (!formData[field]?.trim()) newErrors[field] = `${label} is required when entering a guardian address.`;
+        });
+        if (formData.guardianZipCode.trim() && !/^\d{4}$/.test(formData.guardianZipCode)) {
+            newErrors.guardianZipCode = "ZIP code must contain exactly 4 digits.";
+        }
+        setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -349,41 +367,42 @@ export default function EnrollmentMain() {
 
         switch (currentStep) {
             case 1:
-                //if (!validateBasicInfo()) return;
+                if (!validateBasicInfo()) return;
                 setCurrentStep(2);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 2:
-                //if (!validateNameInfo()) return;
+                if (!validateNameInfo()) return;
                 setCurrentStep(3);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 3:
-                //if (!validateBirthInfo()) return;
+                if (!validateBirthInfo()) return;
                 setCurrentStep(4);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 4:
-                //if (!validateAddressInfo()) return;
+                if (!validateAddressInfo()) return;
                 setCurrentStep(5);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 5:
-                //if (!validateGuardianInfo()) return;
+                if (!validateGuardianInfo()) return;
                 setCurrentStep(6);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 6:
-                //if (!validateFatherAddress()) return;
+                if (!validateFatherAddress()) return;
                 setCurrentStep(7);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 7:
-                //if (!validateMotherAddress()) return;
+                if (!validateMotherAddress()) return;
                 setCurrentStep(8);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 8:
+                if (!validateGuardianAddress()) return;
                 setCurrentStep(9);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
@@ -407,8 +426,21 @@ export default function EnrollmentMain() {
                 setCurrentStep(13);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 13:
+            case 13: {
+                const existing = JSON.parse(localStorage.getItem("enrollmentApplications") || "[]");
+                const application = {
+                    ...formData,
+                    age: calculateAge(formData.birthday),
+                    applicationId: `ENR-${Date.now()}`,
+                    submittedAt: new Date().toISOString(),
+                    applicationStatus: "Pending",
+                };
+                localStorage.setItem("enrollmentApplications", JSON.stringify([...existing, application]));
+                localStorage.setItem("latestEnrollmentApplication", JSON.stringify(application));
+                alert("Enrollment information saved successfully on this device!");
+                navigate("/");
                 return;
+            }
             default:
                 break;
         }
@@ -828,7 +860,7 @@ export default function EnrollmentMain() {
                                             htmlFor="middleName"
                                             className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
                                         >
-                                            Middle Name *
+                                            Middle Name (Optional)
                                         </label>
 
                                         <input
@@ -1273,17 +1305,17 @@ export default function EnrollmentMain() {
                                             Barangay
                                         </label>
 
-                                        <input
+                                        <select
                                             id="barangay"
-                                            type="text"
+                                            name="barangay"
                                             value={formData.barangay}
-                                            onChange={(e) =>
-                                                updateField("barangay", e.target.value)
-                                            }
-                                            placeholder="Enter barangay"
+                                            onChange={(e) => updateField("barangay", e.target.value)}
                                             aria-invalid={!!errors.barangay}
                                             className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
-                                        />
+                                        >
+                                            <option value="">--- Select Barangay ---</option>
+                                            {barangays.map((barangay) => <option key={barangay} value={barangay}>{barangay}</option>)}
+                                        </select>
 
                                         {errors.barangay && (
                                             <p className="text-red-500 text-sm mt-1">
@@ -1615,7 +1647,8 @@ export default function EnrollmentMain() {
                                                 <input
                                                     id={`${person.prefix}ContactNumber`}
                                                     type="tel"
-                                                    inputMode="tel"
+                                                    inputMode="numeric"
+                                                    maxLength={12}
                                                     value={formData[`${person.prefix}ContactNumber`]}
                                                     onChange={(e) =>
                                                         updateField(
@@ -1785,22 +1818,36 @@ export default function EnrollmentMain() {
                                                 {field.label}
                                             </label>
 
-                                            <input
-                                                id={field.name}
-                                                name={field.name}
-                                                type="text"
-                                                value={formData[field.name] || ""}
-                                                onChange={(e) =>
-                                                    updateField(field.name, e.target.value)
-                                                }
-                                                placeholder={field.placeholder}
-                                                aria-invalid={!!errors[field.name]}
-                                                className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
-                                                    errors[field.name]
-                                                        ? "border-red-500"
-                                                        : "border-[#2B75D8]"
-                                                }`}
-                                            />
+                                            {field.name.toLowerCase().includes("barangay") ? (
+                                                <select
+                                                    id={field.name}
+                                                    name={field.name}
+                                                    value={formData[field.name] || ""}
+                                                    onChange={(e) => updateField(field.name, e.target.value)}
+                                                    aria-invalid={!!errors[field.name]}
+                                                    className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                        errors[field.name] ? "border-red-500" : "border-[#2B75D8]"
+                                                    }`}
+                                                >
+                                                    <option value="">--- Select Barangay ---</option>
+                                                    {barangays.map((barangay) => <option key={barangay} value={barangay}>{barangay}</option>)}
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    id={field.name}
+                                                    name={field.name}
+                                                    type="text"
+                                                    inputMode={field.name.toLowerCase().includes("zipcode") ? "numeric" : undefined}
+                                                    maxLength={field.name.toLowerCase().includes("zipcode") ? 4 : MAX_ADDRESS_LENGTH}
+                                                    value={formData[field.name] || ""}
+                                                    onChange={(e) => updateField(field.name, e.target.value)}
+                                                    placeholder={field.placeholder}
+                                                    aria-invalid={!!errors[field.name]}
+                                                    className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                        errors[field.name] ? "border-red-500" : "border-[#2B75D8]"
+                                                    }`}
+                                                />
+                                            )}
 
                                             {errors[field.name] && (
                                                 <p className="text-red-500 text-sm mt-1">
@@ -1946,22 +1993,36 @@ export default function EnrollmentMain() {
                                                 {field.label}
                                             </label>
 
-                                            <input
-                                                id={field.name}
-                                                name={field.name}
-                                                type="text"
-                                                value={formData[field.name] || ""}
-                                                onChange={(e) =>
-                                                    updateField(field.name, e.target.value)
-                                                }
-                                                placeholder={field.placeholder}
-                                                aria-invalid={!!errors[field.name]}
-                                                className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
-                                                    errors[field.name]
-                                                        ? "border-red-500"
-                                                        : "border-[#2B75D8]"
-                                                }`}
-                                            />
+                                            {field.name.toLowerCase().includes("barangay") ? (
+                                                <select
+                                                    id={field.name}
+                                                    name={field.name}
+                                                    value={formData[field.name] || ""}
+                                                    onChange={(e) => updateField(field.name, e.target.value)}
+                                                    aria-invalid={!!errors[field.name]}
+                                                    className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                        errors[field.name] ? "border-red-500" : "border-[#2B75D8]"
+                                                    }`}
+                                                >
+                                                    <option value="">--- Select Barangay ---</option>
+                                                    {barangays.map((barangay) => <option key={barangay} value={barangay}>{barangay}</option>)}
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    id={field.name}
+                                                    name={field.name}
+                                                    type="text"
+                                                    inputMode={field.name.toLowerCase().includes("zipcode") ? "numeric" : undefined}
+                                                    maxLength={field.name.toLowerCase().includes("zipcode") ? 4 : MAX_ADDRESS_LENGTH}
+                                                    value={formData[field.name] || ""}
+                                                    onChange={(e) => updateField(field.name, e.target.value)}
+                                                    placeholder={field.placeholder}
+                                                    aria-invalid={!!errors[field.name]}
+                                                    className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                        errors[field.name] ? "border-red-500" : "border-[#2B75D8]"
+                                                    }`}
+                                                />
+                                            )}
 
                                             {errors[field.name] && (
                                                 <p className="text-red-500 text-sm mt-1">
@@ -2106,17 +2167,32 @@ export default function EnrollmentMain() {
                                                 {field.label}
                                             </label>
 
-                                            <input
-                                                id={field.name}
-                                                name={field.name}
-                                                type="text"
-                                                value={formData[field.name] || ""}
-                                                onChange={(e) =>
-                                                    updateField(field.name, e.target.value)
-                                                }
-                                                placeholder={field.placeholder}
-                                                className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
-                                            />
+                                            {field.name.toLowerCase().includes("barangay") ? (
+                                                <select
+                                                    id={field.name}
+                                                    name={field.name}
+                                                    value={formData[field.name] || ""}
+                                                    onChange={(e) => updateField(field.name, e.target.value)}
+                                                    aria-invalid={!!errors[field.name]}
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                >
+                                                    <option value="">--- Select Barangay ---</option>
+                                                    {barangays.map((barangay) => <option key={barangay} value={barangay}>{barangay}</option>)}
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    id={field.name}
+                                                    name={field.name}
+                                                    type="text"
+                                                    inputMode={field.name.toLowerCase().includes("zipcode") ? "numeric" : undefined}
+                                                    maxLength={field.name.toLowerCase().includes("zipcode") ? 4 : MAX_ADDRESS_LENGTH}
+                                                    value={formData[field.name] || ""}
+                                                    onChange={(e) => updateField(field.name, e.target.value)}
+                                                    placeholder={field.placeholder}
+                                                    aria-invalid={!!errors[field.name]}
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                />
+                                            )}
                                         </div>
                                     ))}
 
