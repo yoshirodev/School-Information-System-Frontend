@@ -1,7 +1,11 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import {
+    jhsSections,
+    shsSections,
+    getJhsSubjects,
+} from "../../data/jhsEnrollmentData";
 import Navbar from "../../components/Navbar";
 import bgmain from "../../assets/bgmain.png";
 import nontLogo from "../../assets/nont_logo.png";
@@ -16,6 +20,10 @@ export default function EnrollmentMain() {
     const [formData, setFormData] = useState({
         lrn: "",
         gradeLevel: "",
+
+        // Enrollment assignment
+        assignedSectionId: "",
+
         lastName: "",
         firstName: "",
         middleName: "",
@@ -102,6 +110,14 @@ export default function EnrollmentMain() {
         consentToDataProcessing: "",
     });
 
+    // Step 14: Document Upload
+    const [uploadedFiles, setUploadedFiles] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+    const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png"];
+
     const [errors, setErrors] = useState({});
     const [status, setStatus] = useState("");
 
@@ -113,6 +129,14 @@ export default function EnrollmentMain() {
         { value: "11", label: "Grade 11" },
         { value: "12", label: "Grade 12" },
     ];
+
+    const isJuniorHigh = (gradeLevel) => {
+        return ["7", "8", "9", "10"].includes(gradeLevel);
+    };
+
+    const isSeniorHigh = (gradeLevel) => {
+        return ["11", "12"].includes(gradeLevel);
+    };
 
     // Hard-coded barangays for Calabanga, Camarines Sur.
     const barangays = [
@@ -505,27 +529,27 @@ export default function EnrollmentMain() {
 
         switch (currentStep) {
             case 1:
-                if (!validateBasicInfo()) return;
+                //if (!validateBasicInfo()) return;
                 setCurrentStep(2);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 2:
-                if (!validateNameInfo()) return;
+                //if (!validateNameInfo()) return;
                 setCurrentStep(3);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 3:
-                if (!validateBirthInfo()) return;
+                //if (!validateBirthInfo()) return;
                 setCurrentStep(4);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 4:
-                if (!validateAddressInfo()) return;
+                //if (!validateAddressInfo()) return;
                 setCurrentStep(5);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 5: {
-                if (!validateGuardianInfo()) return;
+                //if (!validateGuardianInfo()) return;
 
                 const fatherUnavailable =
                     formData.fatherUnknown || formData.fatherDeceased;
@@ -543,7 +567,7 @@ export default function EnrollmentMain() {
                 break;
             }
             case 6: {
-                if (!validateFatherAddress()) return;
+                //if (!validateFatherAddress()) return;
 
                 const motherUnavailable =
                     formData.motherUnknown || formData.motherDeceased;
@@ -554,13 +578,13 @@ export default function EnrollmentMain() {
                 break;
             }
             case 7:
-                if (!validateMotherAddress()) return;
+                //if (!validateMotherAddress()) return;
 
                 setCurrentStep(8);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 8:
-                if (!validateGuardianAddress()) return;
+                //if (!validateGuardianAddress()) return;
                 setCurrentStep(9);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
@@ -584,19 +608,84 @@ export default function EnrollmentMain() {
                 setCurrentStep(13);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 13: {
-                const existing = JSON.parse(localStorage.getItem("enrollmentApplications") || "[]");
+            case 13:
+                setCurrentStep(14);
+                setStatus("");
+                setErrors({});
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 14: {
+                if (isJuniorHigh(formData.gradeLevel)) {
+                    const sectionId =
+                        formData.assignedSectionId ||
+                        assignLeastPopulatedSection(formData.gradeLevel);
+
+                    if (!sectionId) {
+                        setStatus(
+                            "Unable to assign a section. Please contact the registrar."
+                        );
+                        return;
+                    }
+
+                    setFormData((prev) => ({
+                        ...prev,
+                        assignedSectionId: sectionId,
+                    }));
+
+                    setCurrentStep(15);
+                } else if (isSeniorHigh(formData.gradeLevel)) {
+                    setCurrentStep(16);
+                } else {
+                    setStatus("Invalid grade level selected.");
+                    return;
+                }
+
+                break;
+            }
+            case 15:
+                // JHS enrollment page → final submission
+                setCurrentStep(17);
+                setStatus("");
+                setErrors({});
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 16:
+                // SHS enrollment page → final submission
+                setCurrentStep(17);
+                setStatus("");
+                setErrors({});
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 17: {
+                // Final submission for both JHS and SHS.
+                const existing = JSON.parse(
+                    localStorage.getItem("enrollmentApplications") || "[]"
+                );
+
                 const application = {
                     ...formData,
                     age: calculateAge(formData.birthday),
                     applicationId: `ENR-${Date.now()}`,
                     submittedAt: new Date().toISOString(),
                     applicationStatus: "Pending",
+
+                    // Frontend-only file information
+                    uploadedDocuments: uploadedFiles.map((file) => ({
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                    })),
                 };
-                localStorage.setItem("enrollmentApplications", JSON.stringify([...existing, application]));
-                localStorage.setItem("latestEnrollmentApplication", JSON.stringify(application));
-                alert("Enrollment information saved successfully on this device!");
-                navigate("/");
+
+                localStorage.setItem(
+                    "enrollmentApplications",
+                    JSON.stringify([...existing, application])
+                );
+
+                localStorage.setItem(
+                    "latestEnrollmentApplication",
+                    JSON.stringify(application)
+                );
                 return;
             }
             default:
@@ -607,6 +696,45 @@ export default function EnrollmentMain() {
         setStatus("");
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
+
+    const assignLeastPopulatedSection = (gradeLevel) => {
+        const availableSections = jhsSections[gradeLevel];
+
+        if (!availableSections) return "";
+
+        const applications = JSON.parse(
+            localStorage.getItem("enrollmentApplications") || "[]"
+        );
+
+        const sectionCounts = availableSections.map((section) => {
+            const count = applications.filter(
+                (application) =>
+                    application.gradeLevel === gradeLevel &&
+                    application.assignedSectionId === section.id
+            ).length;
+
+            return {
+                ...section,
+                studentCount: count,
+            };
+        });
+
+        // Find the section with the fewest students.
+        // If tied, the first section in the array is selected.
+        sectionCounts.sort(
+            (a, b) => a.studentCount - b.studentCount
+        );
+
+        return sectionCounts[0].id;
+    };
+
+    const assignedJhsSection = jhsSections[formData.gradeLevel]
+        ?.find(
+            (section) =>
+                section.id === formData.assignedSectionId
+        );
+
+    const jhsSubjects = getJhsSubjects(formData.gradeLevel);
 
     // Back button
     const handleBack = () => {
@@ -681,6 +809,26 @@ export default function EnrollmentMain() {
                 setCurrentStep(12);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
+            case 14:
+                setCurrentStep(13);
+                setStatus("");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 15:
+                setCurrentStep(17);
+                // ...
+                break;
+            case 16:
+                setCurrentStep(14);
+                break;
+
+            case 17:
+                if (isJuniorHigh(formData.gradeLevel)) {
+                    setCurrentStep(15);
+                } else if (isSeniorHigh(formData.gradeLevel)) {
+                    setCurrentStep(16);
+                }
+                break;
             default:
                 break;
         }
@@ -689,9 +837,9 @@ export default function EnrollmentMain() {
     // Shared progress indicator
     const progressSteps = [
         "Personal Info",
-        "Address",
-        "Guardian",
-        "Advanced Information",
+        "Documents",
+        "Subject",
+        "Confirmation",
     ];
 
     const calculateAge = (birthday) => {
@@ -729,12 +877,86 @@ export default function EnrollmentMain() {
         setStatus("");
     };
 
+    // Handle file selection and drag-and-drop
+    const handleFileUpload = (files) => {
+        const selectedFiles = Array.from(files);
+        const validFiles = [];
+        const rejectedFiles = [];
+
+        selectedFiles.forEach((file) => {
+            if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+                rejectedFiles.push(`${file.name}: Only JPG and PNG files are allowed.`);
+                return;
+            }
+
+            if (file.size > MAX_FILE_SIZE) {
+                rejectedFiles.push(`${file.name}: File exceeds the 10MB limit.`);
+                return;
+            }
+
+            // Prevent duplicate files
+            const alreadyExists = uploadedFiles.some(
+                (existingFile) =>
+                    existingFile.name === file.name &&
+                    existingFile.size === file.size &&
+                    existingFile.lastModified === file.lastModified
+            );
+
+            if (!alreadyExists) {
+                validFiles.push(file);
+            }
+        });
+
+        setUploadedFiles((prev) => [...prev, ...validFiles]);
+
+        if (rejectedFiles.length > 0) {
+            setStatus(rejectedFiles.join(" "));
+        } else {
+            setStatus("");
+        }
+    };
+
+    // File browser
+    const handleFileSelect = (e) => {
+        handleFileUpload(e.target.files);
+        e.target.value = "";
+    };
+
+    // Drag and drop
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        handleFileUpload(e.dataTransfer.files);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    // Remove uploaded file
+    const removeUploadedFile = (index) => {
+        setUploadedFiles((prev) =>
+            prev.filter((_, fileIndex) => fileIndex !== index)
+        );
+
+        setStatus("");
+    };
+
     // porgress calculation for the progress bar, since the first 3 steps are considered as one step in the progress bar
+    // Progress calculation
     const progressStep =
-        currentStep <= 3 ? 1 :
-        currentStep === 4 ? 2 :
-        currentStep <= 8 ? 3 : 4;
-    
+        currentStep <= 13 ? 1 :
+        currentStep === 14 ? 2 :
+        currentStep === 15 ? 3 :
+        4;
+        
     return (
         <div className="relative bg-white min-h-screen w-full overflow-x-hidden">
 
@@ -3539,7 +3761,7 @@ export default function EnrollmentMain() {
                                 onClick={handleNext}
                                 className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
                             >
-                                Done
+                                Next
                                 <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
                                     <path
                                         d="M1 8H17M10 1L17 8L10 15"
@@ -3556,6 +3778,488 @@ export default function EnrollmentMain() {
                     </div>
                 </main>
             )}
+
+            {/* ==============================
+                SCREEN 14: PART 6 UPLOADING DOCUMENT
+            ============================== */}
+
+            {currentStep === 14 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[704px] px-5 sm:px-8 py-[26px] relative">
+
+                        {/* Page Heading */}
+                        <p className="text-[#2B75D8] font-inter text-base leading-6 mb-8">
+                            Uploading Document (You can still proceed with the enrollment without your personal document)
+                        </p>
+
+                        {/* Upload Container */}
+                        <div
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            className={`w-full max-w-[1121px] min-h-[321px] mx-auto rounded-[10px] border border-dashed flex flex-col items-center justify-center px-4 py-8 transition ${
+                                isDragging
+                                    ? "border-[#2B75D8] bg-blue-50"
+                                    : "border-[#2B75D8] bg-white"
+                            }`}
+                        >
+
+                            {/* Upload Icon */}
+                            <svg
+                                width="150"
+                                height="150"
+                                viewBox="0 0 150 166"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-[150px] h-[150px] mb-2"
+                            >
+                                <path
+                                    d="M75 0C62.6273 0.0387986 50.6764 4.50127 41.3063 12.5813C34.125 18.7688 28.9219 26.8312 27.5812 34.9219C11.8687 38.3906 0 52.0781 0 68.6062C0 87.8063 16.0125 103.125 35.4469 103.125H70.3125V53.5031L50.1938 73.6312C49.3136 74.5114 48.1198 75.0059 46.875 75.0059C45.6302 75.0059 44.4364 74.5114 43.5562 73.6312C42.6761 72.7511 42.1816 71.5573 42.1816 70.3125C42.1816 69.0677 42.6761 67.8739 43.5562 66.9938L71.6813 38.8687C72.1167 38.4322 72.6339 38.0859 73.2034 37.8496C73.7729 37.6133 74.3834 37.4916 75 37.4916C75.6166 37.4916 76.2271 37.6133 76.7966 37.8496C77.3661 38.0859 77.8833 38.4322 78.3187 38.8687L106.444 66.9938C107.324 67.8739 107.818 69.0677 107.818 70.3125C107.818 71.5573 107.324 72.7511 106.444 73.6312C105.564 74.5114 104.37 75.0059 103.125 75.0059C101.88 75.0059 100.686 74.5114 99.8063 73.6312L79.6875 53.5031V103.125H118.95C135.956 103.125 150 89.7188 150 72.8719C150 57.5344 138.356 45.0375 123.431 42.9281C121.153 18.7406 100.219 0 75 0ZM70.3125 135.938V103.125H79.6875V135.938C79.6875 137.181 79.1936 138.373 78.3146 139.252C77.4355 140.131 76.2432 140.625 75 140.625C73.7568 140.625 72.5645 140.131 71.6854 139.252C70.8064 138.373 70.3125 137.181 70.3125 135.938Z"
+                                    fill="#2B75D8"
+                                />
+                            </svg>
+
+                            <h2 className="text-black font-poppins text-xl sm:text-[25px] text-center">
+                                Drag and drop your file here
+                            </h2>
+
+                            <p className="text-black font-poppins text-sm sm:text-[17px] mt-1">
+                                or click to browse files
+                            </p>
+
+                            {/* File Browser */}
+                            <label className="mt-4 cursor-pointer rounded-[10px] bg-[#2B75D8] w-[150px] h-10 flex items-center justify-center gap-2 text-white font-poppins text-[15px] hover:bg-[#2164bd] transition">
+
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                >
+                                    <path
+                                        d="M22 19V9C22 8.46957 21.7893 7.96086 21.4142 7.58579C21.0391 7.21071 20.5304 7 20 7H13.236C12.8645 6.99999 12.5004 6.89651 12.1844 6.70116C11.8684 6.50581 11.6131 6.22631 11.447 5.894L10.553 4.106C10.3869 3.77353 10.1314 3.49394 9.8152 3.29858C9.49902 3.10322 9.13466 2.99983 8.763 3H4C3.46957 3 2.96086 3.21071 2.58579 3.58579C2.21071 3.96086 2 4.46957 2 5V19C2 19.5304 2.21071 20.0391 2.58579 20.4142C2.96086 20.7893 3.46957 21 4 21H20C20.5304 21 21.0391 20.7893 21.4142 20.4142C21.7893 20.0391 22 19.5304 22 19Z"
+                                        stroke="white"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+
+                                Choose File
+
+                                <input
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                    multiple
+                                    onChange={handleFileSelect}
+                                    className="hidden"
+                                />
+                            </label>
+
+                            <p className="text-black font-poppins text-[10px] mt-3 text-center">
+                                Supported formats: JPG, PNG ● Max File Size: 10MB per file
+                            </p>
+
+                        </div>
+
+                        {/* Uploaded Files */}
+                        {uploadedFiles.length > 0 && (
+                            <div className="max-w-[1121px] mx-auto mt-6">
+
+                                <h3 className="text-[#2B75D8] font-poppins text-base font-semibold mb-3">
+                                    Selected Documents ({uploadedFiles.length})
+                                </h3>
+
+                                <div className="space-y-3">
+
+                                    {uploadedFiles.map((file, index) => (
+                                        <div
+                                            key={`${file.name}-${file.lastModified}-${index}`}
+                                            className="flex items-center justify-between gap-3 border border-gray-200 rounded-lg p-3"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-poppins text-gray-800 break-all">
+                                                    {file.name}
+                                                </p>
+
+                                                <p className="text-xs text-gray-500">
+                                                    {(file.size / (1024 * 1024)).toFixed(2)} MB
+                                                </p>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => removeUploadedFile(index)}
+                                                className="text-red-500 hover:text-red-700 text-sm font-poppins shrink-0"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Status Message */}
+                        {status && (
+                            <p
+                                role="alert"
+                                className="text-red-500 text-sm text-center mt-4 font-poppins"
+                            >
+                                {status}
+                            </p>
+                        )}
+
+                        {/* Required Documents */}
+                        <p className="text-[#2B75D8] font-poppins text-base sm:text-xl text-center mt-8">
+                            PSA Birth Certificate, Report Card SF9, ID Picture
+                        </p>
+
+                        {/* Navigation */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-8">
+
+                            <button
+                                type="button"
+                                onClick={handleBack}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                            >
+                                <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                    <path
+                                        d="M17 8H1M8 1L1 8L8 15"
+                                        stroke="#2B75D8"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                                Back
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleNext}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] transition"
+                            >
+                                Next
+
+                                <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                    <path
+                                        d="M1 8H17M10 1L17 8L10 15"
+                                        stroke="white"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </button>
+
+                        </div>
+
+                    </div>
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 15: JUNIOR HIGH SCHOOL ENROLLMENT
+            ============================== */}
+
+            {currentStep === 15 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] px-5 sm:px-10 py-8">
+
+                        {/* PAGE HEADER */}
+                        <div className="mb-8">
+                            <p className="text-[#2B75D8] font-poppins text-sm font-medium mb-2">
+                                JUNIOR HIGH SCHOOL
+                            </p>
+
+                            <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold">
+                                Enrollment Information
+                            </h1>
+
+                            <p className="text-gray-500 font-poppins text-sm mt-2">
+                                Review your assigned section, prescribed subjects,
+                                and class schedule.
+                            </p>
+                        </div>
+
+                        {/* STUDENT INFORMATION */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <h2 className="text-gray-800 font-poppins font-semibold text-lg mb-5">
+                                Student Information
+                            </h2>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Learner Reference Number
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        {formData.lrn || "Not provided"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Student Name
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        {[
+                                            formData.firstName,
+                                            formData.middleName,
+                                            formData.lastName,
+                                            formData.extensionName,
+                                        ].filter(Boolean).join(" ") || "Not provided"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Grade Level
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        Grade {formData.gradeLevel}
+                                    </p>
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                        {/* SECTION ASSIGNMENT */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+
+                                <div>
+                                    <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                        Section Assignment
+                                    </h2>
+
+                                    <p className="text-gray-500 font-poppins text-sm mt-1">
+                                        Your section is automatically assigned based
+                                        on available section population.
+                                    </p>
+                                </div>
+
+                                <span className="self-start bg-blue-50 text-[#2B75D8] rounded-full px-4 py-2 text-xs font-poppins font-semibold">
+                                    Automatically Assigned
+                                </span>
+
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                                <div className="bg-blue-50 rounded-lg p-5">
+
+                                    <p className="text-gray-500 font-poppins text-sm mb-2">
+                                        Assigned Section
+                                    </p>
+
+                                    <h3 className="text-[#2B75D8] text-2xl font-poppins font-bold">
+                                        {assignedJhsSection?.name || "No section assigned"}
+                                    </h3>
+
+                                </div>
+
+                                <div className="bg-gray-50 rounded-lg p-5">
+
+                                    <p className="text-gray-500 font-poppins text-sm mb-2">
+                                        Section Adviser
+                                    </p>
+
+                                    <h3 className="text-gray-800 text-lg font-poppins font-semibold">
+                                        {assignedJhsSection?.adviser || "Unassigned"}
+                                    </h3>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                        {/* PRESCRIBED SUBJECTS */}
+                        <section className="mb-8">
+
+                            <div className="mb-4">
+                                <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                    Prescribed Subjects
+                                </h2>
+
+                                <p className="text-gray-500 font-poppins text-sm mt-1">
+                                    Learning areas assigned to Grade {formData.gradeLevel}.
+                                </p>
+                            </div>
+
+                            <div className="overflow-x-auto border border-gray-200 rounded-xl">
+
+                                <table className="w-full min-w-[650px] text-left">
+
+                                    <thead className="bg-blue-50">
+                                        <tr>
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                No.
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Subject / Learning Area
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Subject Teacher
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {jhsSubjects.map((subject, index) => (
+                                            <tr
+                                                key={subject.id}
+                                                className="border-t border-gray-100 hover:bg-gray-50 transition"
+                                            >
+                                                <td className="px-5 py-4 text-gray-600 font-poppins text-sm">
+                                                    {index + 1}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-800 font-poppins text-sm font-medium">
+                                                    {subject.name}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-500 font-poppins text-sm">
+                                                    {subject.teacher}
+                                                </td>
+                                            </tr>
+                                        ))}
+
+                                        {jhsSubjects.length === 0 && (
+                                            <tr>
+                                                <td
+                                                    colSpan="3"
+                                                    className="px-5 py-8 text-center text-gray-500 font-poppins text-sm"
+                                                >
+                                                    No subjects available for this grade level.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </section>
+
+                        {/* CLASS SCHEDULE */}
+                        <section className="mb-8">
+
+                            <div className="mb-4">
+                                <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                    Class Schedule
+                                </h2>
+                            </div>
+
+                            <div className="overflow-x-auto border border-gray-200 rounded-xl">
+
+                                <table className="w-full min-w-[650px] text-left">
+
+                                    <thead className="bg-blue-50">
+                                        <tr>
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Subject
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Day
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Time
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Teacher
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {jhsSubjects.map((subject) => (
+                                            <tr
+                                                key={subject.id}
+                                                className="border-t border-gray-100 hover:bg-gray-50 transition"
+                                            >
+                                                <td className="px-5 py-4 text-gray-800 font-poppins text-sm font-medium">
+                                                    {subject.name}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-600 font-poppins text-sm">
+                                                    {subject.day}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-600 font-poppins text-sm">
+                                                    {subject.time}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-500 font-poppins text-sm">
+                                                    {subject.teacher}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </section>
+
+                        {/* INFORMATION NOTE */}
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-8">
+
+                            <p className="text-[#2B75D8] font-poppins font-semibold text-sm mb-1">
+                                Important Information
+                            </p>
+
+                            <p className="text-gray-600 font-poppins text-sm leading-6">
+                                Your assigned section and learning areas are displayed
+                                for enrollment reference. Subject teachers and official
+                                class schedules may still be updated by the school
+                                administration.
+                            </p>
+
+                        </div>
+
+                        {/* NAVIGATION */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+
+                            <button
+                                type="button"
+                                onClick={handleBack}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] hover:bg-blue-50 transition"
+                            >
+                                Back
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleNext}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] hover:bg-[#2164bd] transition"
+                            >
+                                Continue
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </main>
+            )}
+
         </div>
     );
 }
