@@ -8,7 +8,7 @@ import cloud from "../assets/landingimg/cloud_icon.png";
 import document from "../assets/landingimg/document_icon.png";
 import facebook from "../assets/landingimg/facebook_icon.png";
 import finishflag from "../assets/landingimg/finishflag_icon.png";
-import internet from "../assets/landingimg/internet_icon.png";
+import internet from "../assets/landingimg/Internet_icon.png";
 import landscapebg from "../assets/landingimg/landscapebg_icon.png";
 import openbook from "../assets/landingimg/openbook_icon.png";
 import people from "../assets/landingimg/people_icon.png";
