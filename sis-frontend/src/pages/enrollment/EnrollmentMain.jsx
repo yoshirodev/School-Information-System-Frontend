@@ -33,19 +33,20 @@ export default function EnrollmentMain() {
         barangay: "",
         province: "",
         municipalityCity: "",
-        country: "",
 
         // Step 5: Parent / Guardian Information
         fatherLastName: "",
         fatherFirstName: "",
         fatherMiddleName: "",
         fatherContactNumber: "",
+        fatherUnknown: false,
         fatherDeceased: false,
 
         motherLastName: "",
         motherFirstName: "",
         motherMiddleName: "",
         motherContactNumber: "",
+        motherUnknown: false,
         motherDeceased: false,
 
         guardianLastName: "",
@@ -61,7 +62,6 @@ export default function EnrollmentMain() {
         fatherBarangay: "",
         fatherProvince: "",
         fatherMunicipalityCity: "",
-        fatherCountry: "",
 
         // Mother's Address
         motherHouseNoStreet: "",
@@ -70,7 +70,6 @@ export default function EnrollmentMain() {
         motherBarangay: "",
         motherProvince: "",
         motherMunicipalityCity: "",
-        motherCountry: "",
 
         // Legal Guardian's Address (Optional)
         guardianHouseNoStreet: "",
@@ -79,7 +78,6 @@ export default function EnrollmentMain() {
         guardianBarangay: "",
         guardianProvince: "",
         guardianMunicipalityCity: "",
-        guardianCountry: "",
 
         // Step 9: Advanced Information (All Optional)
         psaBirthCertificateNo: "",
@@ -141,7 +139,7 @@ export default function EnrollmentMain() {
             else if (name.toLowerCase().includes("zipcode")) value = value.replace(/\D/g, "").slice(0, 4);
             else if (name.toLowerCase().includes("contactnumber")) value = value.replace(/\D/g, "").slice(0, MAX_CONTACT_DIGITS);
             else if (["lastName", "firstName", "middleName", "extensionName"].includes(name) || /Name$/.test(name)) value = value.slice(0, MAX_NAME_LENGTH);
-            else if (/Street$|placeOfBirth|province|municipalityCity|country|motherTongue/.test(name)) value = value.slice(0, MAX_ADDRESS_LENGTH);
+            else if (/Street$|placeOfBirth|province|municipalityCity|motherTongue/.test(name)) value = value.slice(0, MAX_ADDRESS_LENGTH);
         }
         setFormData((prev) => ({
             ...prev,
@@ -152,6 +150,32 @@ export default function EnrollmentMain() {
             ...prev,
             [name]: "",
         }));
+
+        setStatus("");
+    };
+
+    const handleUnknownParent = (prefix, checked) => {
+        setFormData((prev) => ({
+            ...prev,
+            [`${prefix}Unknown`]: checked,
+
+            // Clear the fields when the parent is marked as unknown
+            [`${prefix}LastName`]: checked ? "" : prev[`${prefix}LastName`],
+            [`${prefix}FirstName`]: checked ? "" : prev[`${prefix}FirstName`],
+            [`${prefix}MiddleName`]: checked ? "" : prev[`${prefix}MiddleName`],
+            [`${prefix}ContactNumber`]: checked ? "" : prev[`${prefix}ContactNumber`],
+            [`${prefix}Deceased`]: checked ? false : prev[`${prefix}Deceased`],
+        }));
+
+        setErrors((prev) => {
+            const updated = { ...prev };
+
+            ["LastName", "FirstName", "MiddleName", "ContactNumber"].forEach((field) => {
+                delete updated[`${prefix}${field}`];
+            });
+
+            return updated;
+        });
 
         setStatus("");
     };
@@ -254,10 +278,6 @@ export default function EnrollmentMain() {
             newErrors.municipalityCity = "Municipality / City is required.";
         }
 
-        if (!formData.country.trim()) {
-            newErrors.country = "Country is required.";
-        }
-
         setErrors(newErrors);
 
         return Object.keys(newErrors).length === 0;
@@ -265,36 +285,123 @@ export default function EnrollmentMain() {
 
     const validateGuardianInfo = () => {
         const newErrors = {};
-        const people = [
-            { prefix: "father", label: "Father", optional: formData.fatherDeceased },
-            { prefix: "mother", label: "Mother", optional: formData.motherDeceased },
-            { prefix: "guardian", label: "Legal Guardian", optional: true },
-        ];
 
-        people.forEach(({ prefix, label, optional }) => {
+        const validateParent = (prefix, label) => {
+            // Skip a parent marked as unknown
+            if (formData[`${prefix}Unknown`]) return;
+
             const lastName = formData[`${prefix}LastName`].trim();
             const firstName = formData[`${prefix}FirstName`].trim();
             const contact = formData[`${prefix}ContactNumber`].trim();
-            const hasAny = lastName || firstName || contact;
 
-            if (prefix === "guardian" && !hasAny) return;
-            if (optional && prefix !== "guardian" && !hasAny) return;
-
-            if (!lastName) newErrors[`${prefix}LastName`] = `${label}'s last name is required.`;
-            if (!firstName) newErrors[`${prefix}FirstName`] = `${label}'s first name is required.`;
-            if (!formData[`${prefix}Deceased`]) {
-                if (!contact) newErrors[`${prefix}ContactNumber`] = `${label}'s contact number is required.`;
-                else if (!/^(09\d{9}|639\d{9})$/.test(contact)) {
-                    newErrors[`${prefix}ContactNumber`] = "Use 09XXXXXXXXX or 639XXXXXXXXX.";
-                }
+            if (!lastName) {
+                newErrors[`${prefix}LastName`] =
+                    `${label}'s last name is required.`;
             }
-        });
+
+            if (!firstName) {
+                newErrors[`${prefix}FirstName`] =
+                    `${label}'s first name is required.`;
+            }
+
+            // Contact number is optional if deceased
+            if (!formData[`${prefix}Deceased`]) {
+                if (!contact) {
+                    newErrors[`${prefix}ContactNumber`] =
+                        `${label}'s contact number is required.`;
+                } else if (!/^(09\d{9}|639\d{9})$/.test(contact)) {
+                    newErrors[`${prefix}ContactNumber`] =
+                        "Use 09XXXXXXXXX or 639XXXXXXXXX.";
+                }
+            } else if (
+                contact &&
+                !/^(09\d{9}|639\d{9})$/.test(contact)
+            ) {
+                newErrors[`${prefix}ContactNumber`] =
+                    "Use 09XXXXXXXXX or 639XXXXXXXXX.";
+            }
+        };
+
+        validateParent("father", "Father");
+        validateParent("mother", "Mother");
+
+        // Guardian is required when both parents are unavailable
+        const guardianRequired =
+            (formData.fatherUnknown || formData.fatherDeceased) &&
+            (formData.motherUnknown || formData.motherDeceased);
+
+        const guardianLastName = formData.guardianLastName.trim();
+        const guardianFirstName = formData.guardianFirstName.trim();
+        const guardianContact = formData.guardianContactNumber.trim();
+
+        const guardianHasAny =
+            guardianLastName || guardianFirstName || guardianContact;
+
+        if (guardianRequired || guardianHasAny) {
+            if (!guardianLastName) {
+                newErrors.guardianLastName =
+                    "Legal guardian's last name is required.";
+            }
+
+            if (!guardianFirstName) {
+                newErrors.guardianFirstName =
+                    "Legal guardian's first name is required.";
+            }
+
+            if (!guardianContact) {
+                newErrors.guardianContactNumber =
+                    "Legal guardian's contact number is required.";
+            } else if (!/^(09\d{9}|639\d{9})$/.test(guardianContact)) {
+                newErrors.guardianContactNumber =
+                    "Use 09XXXXXXXXX or 639XXXXXXXXX.";
+            }
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-        const validateFatherAddress = () => {
+    const validateAddress = (prefix, required) => {
+        const fields = [
+            `${prefix}HouseNoStreet`,
+            `${prefix}SitioStreet`,
+            `${prefix}ZipCode`,
+            `${prefix}Barangay`,
+            `${prefix}Province`,
+            `${prefix}MunicipalityCity`,
+        ];
+
+        const hasAnyValue = fields.some(
+            (field) => formData[field]?.trim()
+        );
+
+        // Optional address: allow the entire section to remain empty.
+        if (!required && !hasAnyValue) {
+            return true;
+        }
+
+        const newErrors = {};
+
+        fields.forEach((field) => {
+            if (!formData[field]?.trim()) {
+                newErrors[field] = "This field is required.";
+            }
+        });
+
+        // Keep any existing ZIP code format validation here.
+        // For example, if your current validation checks for a 4-digit
+        // Philippine ZIP code, retain that same rule.
+
+        setErrors((prev) => ({
+            ...prev,
+            ...newErrors,
+        }));
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const validateFatherAddress = () => {
+        if (formData.fatherUnknown || formData.fatherDeceased) return true;
         const newErrors = {};
         const requiredFields = {
             fatherHouseNoStreet: "House No. / Street",
@@ -303,7 +410,6 @@ export default function EnrollmentMain() {
             fatherBarangay: "Barangay",
             fatherProvince: "Province",
             fatherMunicipalityCity: "Municipality / City",
-            fatherCountry: "Country",
         };
 
         Object.entries(requiredFields).forEach(([field, label]) => {
@@ -317,6 +423,7 @@ export default function EnrollmentMain() {
     };
 
     const validateMotherAddress = () => {
+        if (formData.motherUnknown || formData.motherDeceased) return true;
         const newErrors = {};
         const requiredFields = {
             motherHouseNoStreet: "House No. / Street",
@@ -325,7 +432,6 @@ export default function EnrollmentMain() {
             motherBarangay: "Barangay",
             motherProvince: "Province",
             motherMunicipalityCity: "Municipality / City",
-            motherCountry: "Country",
         };
 
         Object.entries(requiredFields).forEach(([field, label]) => {
@@ -338,8 +444,9 @@ export default function EnrollmentMain() {
         return Object.keys(newErrors).length === 0;
     };
 
-        const validateGuardianAddress = () => {
+    const validateGuardianAddress = () => {
         const newErrors = {};
+
         const fields = {
             guardianHouseNoStreet: "House No. / Street",
             guardianSitioStreet: "Sitio / Street Name",
@@ -347,17 +454,48 @@ export default function EnrollmentMain() {
             guardianBarangay: "Barangay",
             guardianProvince: "Province",
             guardianMunicipalityCity: "Municipality / City",
-            guardianCountry: "Country",
         };
-        const hasAnyValue = Object.keys(fields).some((field) => formData[field]?.trim());
-        if (!hasAnyValue) return true;
-        Object.entries(fields).forEach(([field, label]) => {
-            if (!formData[field]?.trim()) newErrors[field] = `${label} is required when entering a guardian address.`;
-        });
-        if (formData.guardianZipCode.trim() && !/^\d{4}$/.test(formData.guardianZipCode)) {
-            newErrors.guardianZipCode = "ZIP code must contain exactly 4 digits.";
+
+        // Guardian address is required only when BOTH parents
+        // are unknown or deceased.
+        const fatherUnavailable =
+            formData.fatherUnknown || formData.fatherDeceased;
+
+        const motherUnavailable =
+            formData.motherUnknown || formData.motherDeceased;
+
+        const guardianAddressRequired =
+            fatherUnavailable && motherUnavailable;
+
+        // Check whether the user entered anything in the guardian address.
+        const hasAnyValue = Object.keys(fields).some(
+            (field) => formData[field]?.trim()
+        );
+
+        // If optional and completely empty, allow the user to continue.
+        if (!guardianAddressRequired && !hasAnyValue) {
+            setErrors({});
+            return true;
         }
+
+        // Validate all fields when required or when partially completed.
+        Object.entries(fields).forEach(([field, label]) => {
+            if (!formData[field]?.trim()) {
+                newErrors[field] = `${label} is required.`;
+            }
+        });
+
+        // Validate ZIP code format.
+        if (
+            formData.guardianZipCode.trim() &&
+            !/^\d{4}$/.test(formData.guardianZipCode)
+        ) {
+            newErrors.guardianZipCode =
+                "ZIP code must contain exactly 4 digits.";
+        }
+
         setErrors(newErrors);
+
         return Object.keys(newErrors).length === 0;
     };
 
@@ -386,18 +524,38 @@ export default function EnrollmentMain() {
                 setCurrentStep(5);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 5:
+            case 5: {
                 if (!validateGuardianInfo()) return;
-                setCurrentStep(6);
+
+                const fatherUnavailable =
+                    formData.fatherUnknown || formData.fatherDeceased;
+
+                const motherUnavailable =
+                    formData.motherUnknown || formData.motherDeceased;
+
+                if (fatherUnavailable) {
+                    setCurrentStep(motherUnavailable ? 8 : 7);
+                } else {
+                    setCurrentStep(6);
+                }
+
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 6:
+            }
+            case 6: {
                 if (!validateFatherAddress()) return;
-                setCurrentStep(7);
+
+                const motherUnavailable =
+                    formData.motherUnknown || formData.motherDeceased;
+
+                setCurrentStep(motherUnavailable ? 8 : 7);
+
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
+            }
             case 7:
                 if (!validateMotherAddress()) return;
+
                 setCurrentStep(8);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
@@ -476,14 +634,33 @@ export default function EnrollmentMain() {
                 setCurrentStep(5);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 7:
-                setCurrentStep(6);
+            case 7: {
+                const fatherUnavailable =
+                    formData.fatherUnknown || formData.fatherDeceased;
+
+                setCurrentStep(fatherUnavailable ? 5 : 6);
+
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 8:
-                setCurrentStep(7);
+            }
+            case 8: {
+                const fatherUnavailable =
+                    formData.fatherUnknown || formData.fatherDeceased;
+
+                const motherUnavailable =
+                    formData.motherUnknown || formData.motherDeceased;
+
+                if (!motherUnavailable) {
+                    setCurrentStep(7);
+                } else if (!fatherUnavailable) {
+                    setCurrentStep(6);
+                } else {
+                    setCurrentStep(5);
+                }
+
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
+            }
             case 9:
                 setCurrentStep(8);
                 window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1325,7 +1502,7 @@ export default function EnrollmentMain() {
                                     </div>
 
                                     {/* Province */}
-                                    <div className="sm:col-span-1 lg:col-span-2">
+                                    <div>
                                         <label
                                             htmlFor="province"
                                             className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
@@ -1376,34 +1553,6 @@ export default function EnrollmentMain() {
                                         {errors.municipalityCity && (
                                             <p className="text-red-500 text-sm mt-1">
                                                 {errors.municipalityCity}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Country */}
-                                    <div className="sm:col-span-1 lg:col-span-2">
-                                        <label
-                                            htmlFor="country"
-                                            className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
-                                        >
-                                            Country
-                                        </label>
-
-                                        <input
-                                            id="country"
-                                            type="text"
-                                            value={formData.country}
-                                            onChange={(e) =>
-                                                updateField("country", e.target.value)
-                                            }
-                                            placeholder="Enter country"
-                                            aria-invalid={!!errors.country}
-                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
-                                        />
-
-                                        {errors.country && (
-                                            <p className="text-red-500 text-sm mt-1">
-                                                {errors.country}
                                             </p>
                                         )}
                                     </div>
@@ -1503,15 +1652,19 @@ export default function EnrollmentMain() {
 
                                 {[
                                     {
-                                        title: "Fathers Name",
+                                        title: "Father's Name",
                                         prefix: "father",
                                     },
                                     {
-                                        title: "Mothers Name",
+                                        title: "Mother's Name",
                                         prefix: "mother",
                                     },
                                     {
-                                        title: "Legal Guardian's Name (if applicable)",
+                                        title:
+                                            (formData.fatherUnknown || formData.fatherDeceased) &&
+                                            (formData.motherUnknown || formData.motherDeceased)
+                                                ? "Legal Guardian's Name (Required)"
+                                                : "Legal Guardian's Name (Optional)",
                                         prefix: "guardian",
                                     },
                                 ].map((person) => (
@@ -1526,23 +1679,37 @@ export default function EnrollmentMain() {
                                             <h3 className="text-[#2B75D8] font-poppins text-[15px] font-bold">
                                                 {person.title}
                                             </h3>
+                                            {person.prefix !== "guardian" && (
+                                                <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData[`${person.prefix}Deceased`]}
+                                                        onChange={(e) =>
+                                                            updateField(
+                                                                `${person.prefix}Deceased`,
+                                                                e.target.checked
+                                                            )
+                                                        }
+                                                        disabled={formData[`${person.prefix}Unknown`]}
+                                                        className="w-4 h-4 accent-[#2B75D8] cursor-pointer"
+                                                    />
+                                                    Deceased
+                                                </label>
+                                            )}
+                                            {person.prefix !== "guardian" && (
+                                                <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData[`${person.prefix}Unknown`]}
+                                                        onChange={(e) =>
+                                                            handleUnknownParent(person.prefix, e.target.checked)
+                                                        }
+                                                        className="w-4 h-4 accent-[#2B75D8] cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                                    />
 
-                                            <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
-
-                                                <input
-                                                    type="checkbox"
-                                                    checked={formData[`${person.prefix}Deceased`]}
-                                                    onChange={(e) =>
-                                                        updateField(
-                                                            `${person.prefix}Deceased`,
-                                                            e.target.checked
-                                                        )
-                                                    }
-                                                    className="w-4 h-4 accent-[#2B75D8] cursor-pointer"
-                                                />
-
-                                                Deceased
-                                            </label>
+                                                    I don't know this parent's name
+                                                </label>
+                                            )}
 
                                         </div>
 
@@ -1570,7 +1737,11 @@ export default function EnrollmentMain() {
                                                     }
                                                     placeholder="Enter last name"
                                                     aria-invalid={!!errors[`${person.prefix}LastName`]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    disabled={
+                                                        person.prefix !== "guardian" &&
+                                                        formData[`${person.prefix}Unknown`]
+                                                    }
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                                                 />
 
                                                 {errors[`${person.prefix}LastName`] && (
@@ -1601,7 +1772,11 @@ export default function EnrollmentMain() {
                                                     }
                                                     placeholder="Enter first name"
                                                     aria-invalid={!!errors[`${person.prefix}FirstName`]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    disabled={
+                                                        person.prefix !== "guardian" &&
+                                                        formData[`${person.prefix}Unknown`]
+                                                    }
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                                                 />
 
                                                 {errors[`${person.prefix}FirstName`] && (
@@ -1631,7 +1806,11 @@ export default function EnrollmentMain() {
                                                         )
                                                     }
                                                     placeholder="Enter middle name"
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    disabled={
+                                                        person.prefix !== "guardian" &&
+                                                        formData[`${person.prefix}Unknown`]
+                                                    }
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                                                 />
                                             </div>
 
@@ -1658,7 +1837,11 @@ export default function EnrollmentMain() {
                                                     }
                                                     placeholder="Enter contact number"
                                                     aria-invalid={!!errors[`${person.prefix}ContactNumber`]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    disabled={
+                                                        person.prefix !== "guardian" &&
+                                                        formData[`${person.prefix}Unknown`]
+                                                    }
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                                                 />
 
                                                 {errors[`${person.prefix}ContactNumber`] && (
@@ -1799,13 +1982,7 @@ export default function EnrollmentMain() {
                                             name: "fatherMunicipalityCity",
                                             label: "Municipality / City",
                                             placeholder: "Enter municipality / city",
-                                        },
-                                        {
-                                            name: "fatherCountry",
-                                            label: "Country",
-                                            placeholder: "Enter country",
-                                            className: "sm:col-span-1 lg:col-span-2",
-                                        },
+                                        }
                                     ].map((field) => (
                                         <div
                                             key={field.name}
@@ -1977,13 +2154,7 @@ export default function EnrollmentMain() {
                                             name: "motherMunicipalityCity",
                                             label: "Municipality / City",
                                             placeholder: "Enter municipality / city",
-                                        },
-                                        {
-                                            name: "motherCountry",
-                                            label: "Country",
-                                            placeholder: "Enter country",
-                                            className: "sm:col-span-1 lg:col-span-2",
-                                        },
+                                        }
                                     ].map((field) => (
                                         <div key={field.name} className={field.className || ""}>
                                             <label
@@ -2148,13 +2319,7 @@ export default function EnrollmentMain() {
                                             name: "guardianMunicipalityCity",
                                             label: "Municipality / City",
                                             placeholder: "Enter municipality / city",
-                                        },
-                                        {
-                                            name: "guardianCountry",
-                                            label: "Country",
-                                            placeholder: "Enter country",
-                                            className: "sm:col-span-1 lg:col-span-2",
-                                        },
+                                        }
                                     ].map((field) => (
                                         <div
                                             key={field.name}
@@ -2174,7 +2339,9 @@ export default function EnrollmentMain() {
                                                     value={formData[field.name] || ""}
                                                     onChange={(e) => updateField(field.name, e.target.value)}
                                                     aria-invalid={!!errors[field.name]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                        errors[field.name] ? "border-red-500" : "border-[#2B75D8]" 
+                                                    }`}
                                                 >
                                                     <option value="">--- Select Barangay ---</option>
                                                     {barangays.map((barangay) => <option key={barangay} value={barangay}>{barangay}</option>)}
@@ -2190,12 +2357,17 @@ export default function EnrollmentMain() {
                                                     onChange={(e) => updateField(field.name, e.target.value)}
                                                     placeholder={field.placeholder}
                                                     aria-invalid={!!errors[field.name]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                        errors[field.name] ? "border-red-500" : "border-[#2B75D8]"
+                                                    }`}
                                                 />
+                                            )} {errors[field.name] && (
+                                                <p className="text-red-500 text-sm mt-1">
+                                                    {errors[field.name]}
+                                                </p>
                                             )}
                                         </div>
                                     ))}
-
                                 </div>
 
                                 {/* Navigation Buttons */}
@@ -3229,7 +3401,6 @@ export default function EnrollmentMain() {
                                             ["Subdivision / Barangay", formData.sitioStreet],
                                             ["Province", formData.province],
                                             ["Municipality / City", formData.municipalityCity],
-                                            ["Country", formData.country],
                                             ["Zip Code", formData.zipCode],
                                         ].map(([label, value]) => (
                                             <div key={label}>
