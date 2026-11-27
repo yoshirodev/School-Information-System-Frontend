@@ -628,27 +628,27 @@ export default function EnrollmentMain() {
 
         switch (currentStep) {
             case 1:
-                //if (!validateBasicInfo()) return;
+                if (!validateBasicInfo()) return;
                 setCurrentStep(2);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 2:
-                //if (!validateNameInfo()) return;
+                if (!validateNameInfo()) return;
                 setCurrentStep(3);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 3:
-                //if (!validateBirthInfo()) return;
+                if (!validateBirthInfo()) return;
                 setCurrentStep(4);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 4:
-                //if (!validateAddressInfo()) return;
+                if (!validateAddressInfo()) return;
                 setCurrentStep(5);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 5: {
-                //if (!validateGuardianInfo()) return;
+                if (!validateGuardianInfo()) return;
 
                 const fatherUnavailable =
                     formData.fatherUnknown || formData.fatherDeceased;
@@ -666,7 +666,7 @@ export default function EnrollmentMain() {
                 break;
             }
             case 6: {
-                //if (!validateFatherAddress()) return;
+                if (!validateFatherAddress()) return;
 
                 const motherUnavailable =
                     formData.motherUnknown || formData.motherDeceased;
@@ -677,13 +677,13 @@ export default function EnrollmentMain() {
                 break;
             }
             case 7:
-                //if (!validateMotherAddress()) return;
+                if (!validateMotherAddress()) return;
 
                 setCurrentStep(8);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
             case 8:
-                //if (!validateGuardianAddress()) return;
+                if (!validateGuardianAddress()) return;
                 setCurrentStep(9);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
