@@ -152,7 +152,7 @@ function Portal_Registrar_Profile({
 
             {/* Profile Avatar */}
             <div className="registrar-profile-avatar-section">
-              <div className="registrar-welcome-avatar"><UserCircle size={76} strokeWidth={1.15} /></div>
+              <div className="registrar-welcome-avatar"><UserCircle size={76} strokeWidth={-1.15} /></div>
 
               <h2>
                 Hello, {registrar.fullName.split(" ")[0]}!

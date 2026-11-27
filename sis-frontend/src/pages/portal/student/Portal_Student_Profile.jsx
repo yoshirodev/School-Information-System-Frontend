@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import {
-  UserRound,
+  UserCircle,
   Monitor,
   FileText,
   Contact,
@@ -74,7 +74,7 @@ function StudentProfile({
           <div className="student-personal-card-body">
             <div className="student-profile-avatar-section">
               <div className="student-profile-avatar">
-                <UserRound size={105} strokeWidth={1.5} />
+                <UserCircle size={105} strokeWidth={-1.5} />
               </div>
 
               <h2>Hello, {student.fullName.split(" ")[0]}!</h2>
@@ -86,7 +86,7 @@ function StudentProfile({
               <div className="student-profile-info-column">
                 <div className="student-profile-info-item">
                   <div className="student-profile-info-icon">
-                    <UserRound />
+                    <UserCircle />
                   </div>
 
                   <div className="student-profile-info-text">
