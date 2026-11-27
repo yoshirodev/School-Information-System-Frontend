@@ -57,6 +57,87 @@ Use the following credentials to test the role-based interfaces in the frontend 
 | **Teacher** | `teacher` | `teacher123` | 
 | **Registrar Staff** | `registrar` | `registrar123` | 
 
+# List of All Offered Subjects
+
+## Core Subjects
+* Effective Communication
+* Mabisang Komunikasyon
+* General Mathematics
+* General Science
+* Life and Career Skills
+* Pag-aaral ng Kasaysayan at Lipunang Pilipino
+
+---
+
+## Academic Track
+
+### Arts, Social Sciences, and Humanities
+* Citizenship and Civic Engagement
+* Contemporary Literature 1
+* Contemporary Literature 2
+* Filipino 1 – Wika at Komunikasyon sa Akademikong Filipino
+* Filipino 2 – Filipino para sa Larang Teknikal-Propesyonal
+* Filipino 2 – Filipino sa Isports
+* Filipino 2 – Filipino sa Sining at Disenyo
+* Filipino Identity Through the Arts
+* Introduction to Philosophy
+* Leadership and Management in the Arts
+* Malikhaing Pagsulat
+* Philippine Governance / Philippine Politics and Governance
+* Social Sciences: Theory and Practice
+
+### Science, Technology, Engineering, and Mathematics (STEM)
+* Biology 1
+* Biology 2
+* Chemistry 1
+* Chemistry 2
+* Earth and Space Science 1
+* Earth and Space Science 2
+* Finite Mathematics 1
+* Finite Mathematics 2
+* Physics 1
+* Physics 2
+* Advanced Mathematics
+* Basic Calculus
+* Biology 3
+* Biology 4
+* Chemistry 3
+* Chemistry 4
+* Conceptual Biology and Earth and Space
+* Conceptual Physics and Chemistry in Daily Life
+* Earth and Space Science 3
+* Earth and Space Science 4
+* Empowerment Technologies
+* Physics 3
+* Physics 4
+* Pre-Calculus
+
+### Sports, Health, and Wellness
+* First Aid
+* Fundamentals of Basic Life Support
+* Physical Education 1 – Fitness and Recreation
+* Physical Education 2 – Sports and Dance
+
+### Field Experience
+* Research 1
+* Research 2
+* Arts Apprenticeship – Dance
+* Arts Apprenticeship – Literary Arts
+* Arts Apprenticeship – Music
+* Arts Apprenticeship – Traditional Cultural Expressions
+
+---
+
+## Technical Professional Track
+
+### Agri-Fishery Business and Food Innovation
+* Agricultural Crops Production
+* Agro-entrepreneurship
+* Food Processing
+
+### ICT Support and Computer Programming Technologies
+* Computer Systems Servicing
+
 ## Development Acknowledgments
 
 * **UI/UX Design:** Exported from Figma using the FigRoot plugin.
