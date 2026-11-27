@@ -1,4 +1,4 @@
-# School Information System — Medroso-Mendoza National High School
+# EdSync: School Information System — Medroso-Mendoza National High School
 
 A web-based School Information System developed for **Medroso-Mendoza National High School**. This application provides role-based access and management tools for students, teachers, and registrar staff.
 
