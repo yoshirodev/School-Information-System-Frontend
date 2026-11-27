@@ -2,6 +2,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import {
+    jhsSections,
+    shsSections,
+    getJhsSubjects,
+} from "../../data/jhsEnrollmentData";
+import { shsEnrollmentData } from "../../data/shsEnrollmentData";
+
 import Navbar from "../../components/Navbar";
 import bgmain from "../../assets/bgmain.png";
 import nontLogo from "../../assets/nont_logo.png";
@@ -16,6 +23,10 @@ export default function EnrollmentMain() {
     const [formData, setFormData] = useState({
         lrn: "",
         gradeLevel: "",
+
+        // Enrollment assignment
+        assignedSectionId: "",
+
         lastName: "",
         firstName: "",
         middleName: "",
@@ -33,19 +44,20 @@ export default function EnrollmentMain() {
         barangay: "",
         province: "",
         municipalityCity: "",
-        country: "",
 
         // Step 5: Parent / Guardian Information
         fatherLastName: "",
         fatherFirstName: "",
         fatherMiddleName: "",
         fatherContactNumber: "",
+        fatherUnknown: false,
         fatherDeceased: false,
 
         motherLastName: "",
         motherFirstName: "",
         motherMiddleName: "",
         motherContactNumber: "",
+        motherUnknown: false,
         motherDeceased: false,
 
         guardianLastName: "",
@@ -61,7 +73,6 @@ export default function EnrollmentMain() {
         fatherBarangay: "",
         fatherProvince: "",
         fatherMunicipalityCity: "",
-        fatherCountry: "",
 
         // Mother's Address
         motherHouseNoStreet: "",
@@ -70,7 +81,6 @@ export default function EnrollmentMain() {
         motherBarangay: "",
         motherProvince: "",
         motherMunicipalityCity: "",
-        motherCountry: "",
 
         // Legal Guardian's Address (Optional)
         guardianHouseNoStreet: "",
@@ -79,7 +89,6 @@ export default function EnrollmentMain() {
         guardianBarangay: "",
         guardianProvince: "",
         guardianMunicipalityCity: "",
-        guardianCountry: "",
 
         // Step 9: Advanced Information (All Optional)
         psaBirthCertificateNo: "",
@@ -102,7 +111,23 @@ export default function EnrollmentMain() {
         // Step 12: Consent
         preferredLearningModalities: [],
         consentToDataProcessing: "",
+
+        // Senior High School Enrollment
+        shsSelectedElectives: [],
     });
+
+    // SHS elective selection popup
+    const [isShsModalOpen, setIsShsModalOpen] = useState(false);
+    const [activeShsCluster, setActiveShsCluster] = useState("");
+    const [activeShsTrack, setActiveShsTrack] = useState("academic");
+
+    // Step 14: Document Upload
+    const [uploadedFiles, setUploadedFiles] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+    const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png"];
 
     const [errors, setErrors] = useState({});
     const [status, setStatus] = useState("");
@@ -115,6 +140,14 @@ export default function EnrollmentMain() {
         { value: "11", label: "Grade 11" },
         { value: "12", label: "Grade 12" },
     ];
+
+    const isJuniorHigh = (gradeLevel) => {
+        return ["7", "8", "9", "10"].includes(gradeLevel);
+    };
+
+    const isSeniorHigh = (gradeLevel) => {
+        return ["11", "12"].includes(gradeLevel);
+    };
 
     // Hard-coded barangays for Calabanga, Camarines Sur.
     const barangays = [
@@ -141,7 +174,7 @@ export default function EnrollmentMain() {
             else if (name.toLowerCase().includes("zipcode")) value = value.replace(/\D/g, "").slice(0, 4);
             else if (name.toLowerCase().includes("contactnumber")) value = value.replace(/\D/g, "").slice(0, MAX_CONTACT_DIGITS);
             else if (["lastName", "firstName", "middleName", "extensionName"].includes(name) || /Name$/.test(name)) value = value.slice(0, MAX_NAME_LENGTH);
-            else if (/Street$|placeOfBirth|province|municipalityCity|country|motherTongue/.test(name)) value = value.slice(0, MAX_ADDRESS_LENGTH);
+            else if (/Street$|placeOfBirth|province|municipalityCity|motherTongue/.test(name)) value = value.slice(0, MAX_ADDRESS_LENGTH);
         }
         setFormData((prev) => ({
             ...prev,
@@ -152,6 +185,32 @@ export default function EnrollmentMain() {
             ...prev,
             [name]: "",
         }));
+
+        setStatus("");
+    };
+
+    const handleUnknownParent = (prefix, checked) => {
+        setFormData((prev) => ({
+            ...prev,
+            [`${prefix}Unknown`]: checked,
+
+            // Clear the fields when the parent is marked as unknown
+            [`${prefix}LastName`]: checked ? "" : prev[`${prefix}LastName`],
+            [`${prefix}FirstName`]: checked ? "" : prev[`${prefix}FirstName`],
+            [`${prefix}MiddleName`]: checked ? "" : prev[`${prefix}MiddleName`],
+            [`${prefix}ContactNumber`]: checked ? "" : prev[`${prefix}ContactNumber`],
+            [`${prefix}Deceased`]: checked ? false : prev[`${prefix}Deceased`],
+        }));
+
+        setErrors((prev) => {
+            const updated = { ...prev };
+
+            ["LastName", "FirstName", "MiddleName", "ContactNumber"].forEach((field) => {
+                delete updated[`${prefix}${field}`];
+            });
+
+            return updated;
+        });
 
         setStatus("");
     };
@@ -254,10 +313,6 @@ export default function EnrollmentMain() {
             newErrors.municipalityCity = "Municipality / City is required.";
         }
 
-        if (!formData.country.trim()) {
-            newErrors.country = "Country is required.";
-        }
-
         setErrors(newErrors);
 
         return Object.keys(newErrors).length === 0;
@@ -265,36 +320,123 @@ export default function EnrollmentMain() {
 
     const validateGuardianInfo = () => {
         const newErrors = {};
-        const people = [
-            { prefix: "father", label: "Father", optional: formData.fatherDeceased },
-            { prefix: "mother", label: "Mother", optional: formData.motherDeceased },
-            { prefix: "guardian", label: "Legal Guardian", optional: true },
-        ];
 
-        people.forEach(({ prefix, label, optional }) => {
+        const validateParent = (prefix, label) => {
+            // Skip a parent marked as unknown
+            if (formData[`${prefix}Unknown`]) return;
+
             const lastName = formData[`${prefix}LastName`].trim();
             const firstName = formData[`${prefix}FirstName`].trim();
             const contact = formData[`${prefix}ContactNumber`].trim();
-            const hasAny = lastName || firstName || contact;
 
-            if (prefix === "guardian" && !hasAny) return;
-            if (optional && prefix !== "guardian" && !hasAny) return;
-
-            if (!lastName) newErrors[`${prefix}LastName`] = `${label}'s last name is required.`;
-            if (!firstName) newErrors[`${prefix}FirstName`] = `${label}'s first name is required.`;
-            if (!formData[`${prefix}Deceased`]) {
-                if (!contact) newErrors[`${prefix}ContactNumber`] = `${label}'s contact number is required.`;
-                else if (!/^(09\d{9}|639\d{9})$/.test(contact)) {
-                    newErrors[`${prefix}ContactNumber`] = "Use 09XXXXXXXXX or 639XXXXXXXXX.";
-                }
+            if (!lastName) {
+                newErrors[`${prefix}LastName`] =
+                    `${label}'s last name is required.`;
             }
-        });
+
+            if (!firstName) {
+                newErrors[`${prefix}FirstName`] =
+                    `${label}'s first name is required.`;
+            }
+
+            // Contact number is optional if deceased
+            if (!formData[`${prefix}Deceased`]) {
+                if (!contact) {
+                    newErrors[`${prefix}ContactNumber`] =
+                        `${label}'s contact number is required.`;
+                } else if (!/^(09\d{9}|639\d{9})$/.test(contact)) {
+                    newErrors[`${prefix}ContactNumber`] =
+                        "Use 09XXXXXXXXX or 639XXXXXXXXX.";
+                }
+            } else if (
+                contact &&
+                !/^(09\d{9}|639\d{9})$/.test(contact)
+            ) {
+                newErrors[`${prefix}ContactNumber`] =
+                    "Use 09XXXXXXXXX or 639XXXXXXXXX.";
+            }
+        };
+
+        validateParent("father", "Father");
+        validateParent("mother", "Mother");
+
+        // Guardian is required when both parents are unavailable
+        const guardianRequired =
+            (formData.fatherUnknown || formData.fatherDeceased) &&
+            (formData.motherUnknown || formData.motherDeceased);
+
+        const guardianLastName = formData.guardianLastName.trim();
+        const guardianFirstName = formData.guardianFirstName.trim();
+        const guardianContact = formData.guardianContactNumber.trim();
+
+        const guardianHasAny =
+            guardianLastName || guardianFirstName || guardianContact;
+
+        if (guardianRequired || guardianHasAny) {
+            if (!guardianLastName) {
+                newErrors.guardianLastName =
+                    "Legal guardian's last name is required.";
+            }
+
+            if (!guardianFirstName) {
+                newErrors.guardianFirstName =
+                    "Legal guardian's first name is required.";
+            }
+
+            if (!guardianContact) {
+                newErrors.guardianContactNumber =
+                    "Legal guardian's contact number is required.";
+            } else if (!/^(09\d{9}|639\d{9})$/.test(guardianContact)) {
+                newErrors.guardianContactNumber =
+                    "Use 09XXXXXXXXX or 639XXXXXXXXX.";
+            }
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-        const validateFatherAddress = () => {
+    const validateAddress = (prefix, required) => {
+        const fields = [
+            `${prefix}HouseNoStreet`,
+            `${prefix}SitioStreet`,
+            `${prefix}ZipCode`,
+            `${prefix}Barangay`,
+            `${prefix}Province`,
+            `${prefix}MunicipalityCity`,
+        ];
+
+        const hasAnyValue = fields.some(
+            (field) => formData[field]?.trim()
+        );
+
+        // Optional address: allow the entire section to remain empty.
+        if (!required && !hasAnyValue) {
+            return true;
+        }
+
+        const newErrors = {};
+
+        fields.forEach((field) => {
+            if (!formData[field]?.trim()) {
+                newErrors[field] = "This field is required.";
+            }
+        });
+
+        // Keep any existing ZIP code format validation here.
+        // For example, if your current validation checks for a 4-digit
+        // Philippine ZIP code, retain that same rule.
+
+        setErrors((prev) => ({
+            ...prev,
+            ...newErrors,
+        }));
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const validateFatherAddress = () => {
+        if (formData.fatherUnknown || formData.fatherDeceased) return true;
         const newErrors = {};
         const requiredFields = {
             fatherHouseNoStreet: "House No. / Street",
@@ -303,7 +445,6 @@ export default function EnrollmentMain() {
             fatherBarangay: "Barangay",
             fatherProvince: "Province",
             fatherMunicipalityCity: "Municipality / City",
-            fatherCountry: "Country",
         };
 
         Object.entries(requiredFields).forEach(([field, label]) => {
@@ -317,6 +458,7 @@ export default function EnrollmentMain() {
     };
 
     const validateMotherAddress = () => {
+        if (formData.motherUnknown || formData.motherDeceased) return true;
         const newErrors = {};
         const requiredFields = {
             motherHouseNoStreet: "House No. / Street",
@@ -325,7 +467,6 @@ export default function EnrollmentMain() {
             motherBarangay: "Barangay",
             motherProvince: "Province",
             motherMunicipalityCity: "Municipality / City",
-            motherCountry: "Country",
         };
 
         Object.entries(requiredFields).forEach(([field, label]) => {
@@ -338,8 +479,9 @@ export default function EnrollmentMain() {
         return Object.keys(newErrors).length === 0;
     };
 
-        const validateGuardianAddress = () => {
+    const validateGuardianAddress = () => {
         const newErrors = {};
+
         const fields = {
             guardianHouseNoStreet: "House No. / Street",
             guardianSitioStreet: "Sitio / Street Name",
@@ -347,18 +489,137 @@ export default function EnrollmentMain() {
             guardianBarangay: "Barangay",
             guardianProvince: "Province",
             guardianMunicipalityCity: "Municipality / City",
-            guardianCountry: "Country",
         };
-        const hasAnyValue = Object.keys(fields).some((field) => formData[field]?.trim());
-        if (!hasAnyValue) return true;
-        Object.entries(fields).forEach(([field, label]) => {
-            if (!formData[field]?.trim()) newErrors[field] = `${label} is required when entering a guardian address.`;
-        });
-        if (formData.guardianZipCode.trim() && !/^\d{4}$/.test(formData.guardianZipCode)) {
-            newErrors.guardianZipCode = "ZIP code must contain exactly 4 digits.";
+
+        // Guardian address is required only when BOTH parents
+        // are unknown or deceased.
+        const fatherUnavailable =
+            formData.fatherUnknown || formData.fatherDeceased;
+
+        const motherUnavailable =
+            formData.motherUnknown || formData.motherDeceased;
+
+        const guardianAddressRequired =
+            fatherUnavailable && motherUnavailable;
+
+        // Check whether the user entered anything in the guardian address.
+        const hasAnyValue = Object.keys(fields).some(
+            (field) => formData[field]?.trim()
+        );
+
+        // If optional and completely empty, allow the user to continue.
+        if (!guardianAddressRequired && !hasAnyValue) {
+            setErrors({});
+            return true;
         }
+
+        // Validate all fields when required or when partially completed.
+        Object.entries(fields).forEach(([field, label]) => {
+            if (!formData[field]?.trim()) {
+                newErrors[field] = `${label} is required.`;
+            }
+        });
+
+        // Validate ZIP code format.
+        if (
+            formData.guardianZipCode.trim() &&
+            !/^\d{4}$/.test(formData.guardianZipCode)
+        ) {
+            newErrors.guardianZipCode =
+                "ZIP code must contain exactly 4 digits.";
+        }
+
         setErrors(newErrors);
+
         return Object.keys(newErrors).length === 0;
+    };
+
+    // Get the clusters based on the selected SHS track
+    const getSelectedShsClusters = () => {
+        return [
+            ...shsEnrollmentData.tracks.academic.clusters.map((cluster) => ({
+                ...cluster,
+                trackId: "academic",
+                trackName: "Academic Track",
+            })),
+
+            ...shsEnrollmentData.tracks.techPro.clusters.map((cluster) => ({
+                ...cluster,
+                trackId: "techPro",
+                trackName: "Technical-Professional Track",
+            })),
+        ];
+    };
+
+    // Check whether an elective is already selected
+    const isShsElectiveSelected = (clusterId, subject) => {
+        return formData.shsSelectedElectives.some(
+            (item) =>
+                item.clusterId === clusterId &&
+                item.subject === subject
+        );
+    };
+    // Add or remove an elective
+    const toggleShsElective = (clusterId, subject) => {
+        setFormData((prev) => {
+            const alreadySelected = prev.shsSelectedElectives.some(
+                (item) =>
+                    item.clusterId === clusterId &&
+                    item.subject === subject
+            );
+
+            return {
+                ...prev,
+                shsSelectedElectives: alreadySelected
+                    ? prev.shsSelectedElectives.filter(
+                        (item) =>
+                            !(
+                                item.clusterId === clusterId &&
+                                item.subject === subject
+                            )
+                    )
+                    : [
+                        ...prev.shsSelectedElectives,
+                        { clusterId, subject },
+                    ],
+            };
+        });
+
+        setErrors((prev) => ({
+            ...prev,
+            shsSelectedElectives: "",
+        }));
+    };
+
+    // Validate the SHS enrollment selection
+    const validateShsSelection = () => {
+        const newErrors = {};
+
+        if (formData.shsSelectedElectives.length < 2) {
+            newErrors.shsSelectedElectives =
+                "Please select at least 2 elective subjects.";
+        }
+
+        setErrors((prev) => ({
+            ...prev,
+            shsSelectedElectives: newErrors.shsSelectedElectives || "",
+        }));
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleShsTrackChange = (trackId) => {
+        setActiveShsTrack(trackId);
+
+        const firstCluster = getSelectedShsClusters().find(
+            (cluster) => cluster.trackId === trackId
+        );
+
+        if (firstCluster) {
+            setActiveShsCluster(firstCluster.id);
+        }
+
+        setIsShsModalOpen(true);
     };
 
     // Next button
@@ -386,18 +647,38 @@ export default function EnrollmentMain() {
                 setCurrentStep(5);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 5:
+            case 5: {
                 if (!validateGuardianInfo()) return;
-                setCurrentStep(6);
+
+                const fatherUnavailable =
+                    formData.fatherUnknown || formData.fatherDeceased;
+
+                const motherUnavailable =
+                    formData.motherUnknown || formData.motherDeceased;
+
+                if (fatherUnavailable) {
+                    setCurrentStep(motherUnavailable ? 8 : 7);
+                } else {
+                    setCurrentStep(6);
+                }
+
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 6:
+            }
+            case 6: {
                 if (!validateFatherAddress()) return;
-                setCurrentStep(7);
+
+                const motherUnavailable =
+                    formData.motherUnknown || formData.motherDeceased;
+
+                setCurrentStep(motherUnavailable ? 8 : 7);
+
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
+            }
             case 7:
                 if (!validateMotherAddress()) return;
+
                 setCurrentStep(8);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
@@ -426,19 +707,86 @@ export default function EnrollmentMain() {
                 setCurrentStep(13);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 13: {
-                const existing = JSON.parse(localStorage.getItem("enrollmentApplications") || "[]");
+            case 13:
+                setCurrentStep(14);
+                setStatus("");
+                setErrors({});
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 14: {
+                if (isJuniorHigh(formData.gradeLevel)) {
+                    const sectionId =
+                        formData.assignedSectionId ||
+                        assignLeastPopulatedSection(formData.gradeLevel);
+
+                    if (!sectionId) {
+                        setStatus(
+                            "Unable to assign a section. Please contact the registrar."
+                        );
+                        return;
+                    }
+
+                    setFormData((prev) => ({
+                        ...prev,
+                        assignedSectionId: sectionId,
+                    }));
+
+                    setCurrentStep(15);
+                } else if (isSeniorHigh(formData.gradeLevel)) {
+                    setCurrentStep(16);
+                } else {
+                    setStatus("Invalid grade level selected.");
+                    return;
+                }
+
+                break;
+            }
+            case 15:
+                // JHS enrollment page → final submission
+                setCurrentStep(17);
+                setStatus("");
+                setErrors({});
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 16:
+                // Validate SHS track and elective selections
+                if (!validateShsSelection()) return;
+
+                setCurrentStep(17);
+                setStatus("");
+                setErrors({});
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 17: {
+                // Final submission for both JHS and SHS.
+                const existing = JSON.parse(
+                    localStorage.getItem("enrollmentApplications") || "[]"
+                );
+
                 const application = {
                     ...formData,
                     age: calculateAge(formData.birthday),
                     applicationId: `ENR-${Date.now()}`,
                     submittedAt: new Date().toISOString(),
                     applicationStatus: "Pending",
+
+                    // Frontend-only file information
+                    uploadedDocuments: uploadedFiles.map((file) => ({
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                    })),
                 };
-                localStorage.setItem("enrollmentApplications", JSON.stringify([...existing, application]));
-                localStorage.setItem("latestEnrollmentApplication", JSON.stringify(application));
-                alert("Enrollment information saved successfully on this device!");
-                navigate("/");
+
+                localStorage.setItem(
+                    "enrollmentApplications",
+                    JSON.stringify([...existing, application])
+                );
+
+                localStorage.setItem(
+                    "latestEnrollmentApplication",
+                    JSON.stringify(application)
+                );
                 return;
             }
             default:
@@ -449,6 +797,45 @@ export default function EnrollmentMain() {
         setStatus("");
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
+
+    const assignLeastPopulatedSection = (gradeLevel) => {
+        const availableSections = jhsSections[gradeLevel];
+
+        if (!availableSections) return "";
+
+        const applications = JSON.parse(
+            localStorage.getItem("enrollmentApplications") || "[]"
+        );
+
+        const sectionCounts = availableSections.map((section) => {
+            const count = applications.filter(
+                (application) =>
+                    application.gradeLevel === gradeLevel &&
+                    application.assignedSectionId === section.id
+            ).length;
+
+            return {
+                ...section,
+                studentCount: count,
+            };
+        });
+
+        // Find the section with the fewest students.
+        // If tied, the first section in the array is selected.
+        sectionCounts.sort(
+            (a, b) => a.studentCount - b.studentCount
+        );
+
+        return sectionCounts[0].id;
+    };
+
+    const assignedJhsSection = jhsSections[formData.gradeLevel]
+        ?.find(
+            (section) =>
+                section.id === formData.assignedSectionId
+        );
+
+    const jhsSubjects = getJhsSubjects(formData.gradeLevel);
 
     // Back button
     const handleBack = () => {
@@ -476,14 +863,33 @@ export default function EnrollmentMain() {
                 setCurrentStep(5);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 7:
-                setCurrentStep(6);
+            case 7: {
+                const fatherUnavailable =
+                    formData.fatherUnknown || formData.fatherDeceased;
+
+                setCurrentStep(fatherUnavailable ? 5 : 6);
+
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
-            case 8:
-                setCurrentStep(7);
+            }
+            case 8: {
+                const fatherUnavailable =
+                    formData.fatherUnknown || formData.fatherDeceased;
+
+                const motherUnavailable =
+                    formData.motherUnknown || formData.motherDeceased;
+
+                if (!motherUnavailable) {
+                    setCurrentStep(7);
+                } else if (!fatherUnavailable) {
+                    setCurrentStep(6);
+                } else {
+                    setCurrentStep(5);
+                }
+
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
+            }
             case 9:
                 setCurrentStep(8);
                 window.scrollTo({ top: 0, behavior: "smooth" });
@@ -504,6 +910,26 @@ export default function EnrollmentMain() {
                 setCurrentStep(12);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 break;
+            case 14:
+                setCurrentStep(13);
+                setStatus("");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 15:
+                setCurrentStep(14);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                break;
+            case 16:
+                setCurrentStep(14);
+                break;
+
+            case 17:
+                if (isJuniorHigh(formData.gradeLevel)) {
+                    setCurrentStep(15);
+                } else if (isSeniorHigh(formData.gradeLevel)) {
+                    setCurrentStep(16);
+                }
+                break;
             default:
                 break;
         }
@@ -512,9 +938,9 @@ export default function EnrollmentMain() {
     // Shared progress indicator
     const progressSteps = [
         "Personal Info",
-        "Address",
-        "Guardian",
-        "Advanced Information",
+        "Documents",
+        "Subject",
+        "Confirmation",
     ];
 
     const calculateAge = (birthday) => {
@@ -552,12 +978,86 @@ export default function EnrollmentMain() {
         setStatus("");
     };
 
+    // Handle file selection and drag-and-drop
+    const handleFileUpload = (files) => {
+        const selectedFiles = Array.from(files);
+        const validFiles = [];
+        const rejectedFiles = [];
+
+        selectedFiles.forEach((file) => {
+            if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+                rejectedFiles.push(`${file.name}: Only JPG and PNG files are allowed.`);
+                return;
+            }
+
+            if (file.size > MAX_FILE_SIZE) {
+                rejectedFiles.push(`${file.name}: File exceeds the 10MB limit.`);
+                return;
+            }
+
+            // Prevent duplicate files
+            const alreadyExists = uploadedFiles.some(
+                (existingFile) =>
+                    existingFile.name === file.name &&
+                    existingFile.size === file.size &&
+                    existingFile.lastModified === file.lastModified
+            );
+
+            if (!alreadyExists) {
+                validFiles.push(file);
+            }
+        });
+
+        setUploadedFiles((prev) => [...prev, ...validFiles]);
+
+        if (rejectedFiles.length > 0) {
+            setStatus(rejectedFiles.join(" "));
+        } else {
+            setStatus("");
+        }
+    };
+
+    // File browser
+    const handleFileSelect = (e) => {
+        handleFileUpload(e.target.files);
+        e.target.value = "";
+    };
+
+    // Drag and drop
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        handleFileUpload(e.dataTransfer.files);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    // Remove uploaded file
+    const removeUploadedFile = (index) => {
+        setUploadedFiles((prev) =>
+            prev.filter((_, fileIndex) => fileIndex !== index)
+        );
+
+        setStatus("");
+    };
+
     // porgress calculation for the progress bar, since the first 3 steps are considered as one step in the progress bar
+    // Progress calculation
     const progressStep =
-        currentStep <= 3 ? 1 :
-        currentStep === 4 ? 2 :
-        currentStep <= 8 ? 3 : 4;
-    
+        currentStep <= 13 ? 1 :
+        currentStep === 14 ? 2 :
+        currentStep === 15 || currentStep === 16 ? 3 :
+        4;
+            
     return (
         <div className="relative bg-white min-h-screen w-full overflow-x-hidden">
 
@@ -1325,7 +1825,7 @@ export default function EnrollmentMain() {
                                     </div>
 
                                     {/* Province */}
-                                    <div className="sm:col-span-1 lg:col-span-2">
+                                    <div>
                                         <label
                                             htmlFor="province"
                                             className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
@@ -1376,34 +1876,6 @@ export default function EnrollmentMain() {
                                         {errors.municipalityCity && (
                                             <p className="text-red-500 text-sm mt-1">
                                                 {errors.municipalityCity}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Country */}
-                                    <div className="sm:col-span-1 lg:col-span-2">
-                                        <label
-                                            htmlFor="country"
-                                            className="block text-[#2B75D8] font-poppins text-[15px] font-bold mb-2"
-                                        >
-                                            Country
-                                        </label>
-
-                                        <input
-                                            id="country"
-                                            type="text"
-                                            value={formData.country}
-                                            onChange={(e) =>
-                                                updateField("country", e.target.value)
-                                            }
-                                            placeholder="Enter country"
-                                            aria-invalid={!!errors.country}
-                                            className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
-                                        />
-
-                                        {errors.country && (
-                                            <p className="text-red-500 text-sm mt-1">
-                                                {errors.country}
                                             </p>
                                         )}
                                     </div>
@@ -1503,15 +1975,19 @@ export default function EnrollmentMain() {
 
                                 {[
                                     {
-                                        title: "Fathers Name",
+                                        title: "Father's Name",
                                         prefix: "father",
                                     },
                                     {
-                                        title: "Mothers Name",
+                                        title: "Mother's Name",
                                         prefix: "mother",
                                     },
                                     {
-                                        title: "Legal Guardian's Name (if applicable)",
+                                        title:
+                                            (formData.fatherUnknown || formData.fatherDeceased) &&
+                                            (formData.motherUnknown || formData.motherDeceased)
+                                                ? "Legal Guardian's Name (Required)"
+                                                : "Legal Guardian's Name (Optional)",
                                         prefix: "guardian",
                                     },
                                 ].map((person) => (
@@ -1526,23 +2002,37 @@ export default function EnrollmentMain() {
                                             <h3 className="text-[#2B75D8] font-poppins text-[15px] font-bold">
                                                 {person.title}
                                             </h3>
+                                            {person.prefix !== "guardian" && (
+                                                <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData[`${person.prefix}Deceased`]}
+                                                        onChange={(e) =>
+                                                            updateField(
+                                                                `${person.prefix}Deceased`,
+                                                                e.target.checked
+                                                            )
+                                                        }
+                                                        disabled={formData[`${person.prefix}Unknown`]}
+                                                        className="w-4 h-4 accent-[#2B75D8] cursor-pointer"
+                                                    />
+                                                    Deceased
+                                                </label>
+                                            )}
+                                            {person.prefix !== "guardian" && (
+                                                <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData[`${person.prefix}Unknown`]}
+                                                        onChange={(e) =>
+                                                            handleUnknownParent(person.prefix, e.target.checked)
+                                                        }
+                                                        className="w-4 h-4 accent-[#2B75D8] cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                                    />
 
-                                            <label className="flex items-center gap-2 text-[#2B75D8] font-poppins text-[13px] cursor-pointer">
-
-                                                <input
-                                                    type="checkbox"
-                                                    checked={formData[`${person.prefix}Deceased`]}
-                                                    onChange={(e) =>
-                                                        updateField(
-                                                            `${person.prefix}Deceased`,
-                                                            e.target.checked
-                                                        )
-                                                    }
-                                                    className="w-4 h-4 accent-[#2B75D8] cursor-pointer"
-                                                />
-
-                                                Deceased
-                                            </label>
+                                                    I don't know this parent's name
+                                                </label>
+                                            )}
 
                                         </div>
 
@@ -1570,7 +2060,11 @@ export default function EnrollmentMain() {
                                                     }
                                                     placeholder="Enter last name"
                                                     aria-invalid={!!errors[`${person.prefix}LastName`]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    disabled={
+                                                        person.prefix !== "guardian" &&
+                                                        formData[`${person.prefix}Unknown`]
+                                                    }
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                                                 />
 
                                                 {errors[`${person.prefix}LastName`] && (
@@ -1601,7 +2095,11 @@ export default function EnrollmentMain() {
                                                     }
                                                     placeholder="Enter first name"
                                                     aria-invalid={!!errors[`${person.prefix}FirstName`]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    disabled={
+                                                        person.prefix !== "guardian" &&
+                                                        formData[`${person.prefix}Unknown`]
+                                                    }
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                                                 />
 
                                                 {errors[`${person.prefix}FirstName`] && (
@@ -1631,7 +2129,11 @@ export default function EnrollmentMain() {
                                                         )
                                                     }
                                                     placeholder="Enter middle name"
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    disabled={
+                                                        person.prefix !== "guardian" &&
+                                                        formData[`${person.prefix}Unknown`]
+                                                    }
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                                                 />
                                             </div>
 
@@ -1658,7 +2160,11 @@ export default function EnrollmentMain() {
                                                     }
                                                     placeholder="Enter contact number"
                                                     aria-invalid={!!errors[`${person.prefix}ContactNumber`]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    disabled={
+                                                        person.prefix !== "guardian" &&
+                                                        formData[`${person.prefix}Unknown`]
+                                                    }
+                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                                                 />
 
                                                 {errors[`${person.prefix}ContactNumber`] && (
@@ -1799,13 +2305,7 @@ export default function EnrollmentMain() {
                                             name: "fatherMunicipalityCity",
                                             label: "Municipality / City",
                                             placeholder: "Enter municipality / city",
-                                        },
-                                        {
-                                            name: "fatherCountry",
-                                            label: "Country",
-                                            placeholder: "Enter country",
-                                            className: "sm:col-span-1 lg:col-span-2",
-                                        },
+                                        }
                                     ].map((field) => (
                                         <div
                                             key={field.name}
@@ -1977,13 +2477,7 @@ export default function EnrollmentMain() {
                                             name: "motherMunicipalityCity",
                                             label: "Municipality / City",
                                             placeholder: "Enter municipality / city",
-                                        },
-                                        {
-                                            name: "motherCountry",
-                                            label: "Country",
-                                            placeholder: "Enter country",
-                                            className: "sm:col-span-1 lg:col-span-2",
-                                        },
+                                        }
                                     ].map((field) => (
                                         <div key={field.name} className={field.className || ""}>
                                             <label
@@ -2148,13 +2642,7 @@ export default function EnrollmentMain() {
                                             name: "guardianMunicipalityCity",
                                             label: "Municipality / City",
                                             placeholder: "Enter municipality / city",
-                                        },
-                                        {
-                                            name: "guardianCountry",
-                                            label: "Country",
-                                            placeholder: "Enter country",
-                                            className: "sm:col-span-1 lg:col-span-2",
-                                        },
+                                        }
                                     ].map((field) => (
                                         <div
                                             key={field.name}
@@ -2174,7 +2662,9 @@ export default function EnrollmentMain() {
                                                     value={formData[field.name] || ""}
                                                     onChange={(e) => updateField(field.name, e.target.value)}
                                                     aria-invalid={!!errors[field.name]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                        errors[field.name] ? "border-red-500" : "border-[#2B75D8]" 
+                                                    }`}
                                                 >
                                                     <option value="">--- Select Barangay ---</option>
                                                     {barangays.map((barangay) => <option key={barangay} value={barangay}>{barangay}</option>)}
@@ -2190,12 +2680,17 @@ export default function EnrollmentMain() {
                                                     onChange={(e) => updateField(field.name, e.target.value)}
                                                     placeholder={field.placeholder}
                                                     aria-invalid={!!errors[field.name]}
-                                                    className="w-full h-[50px] rounded-[10px] border border-[#2B75D8] bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30"
+                                                    className={`w-full h-[50px] rounded-[10px] border bg-white px-3 font-poppins text-[15px] text-black outline-none focus:ring-2 focus:ring-[#2B75D8]/30 ${
+                                                        errors[field.name] ? "border-red-500" : "border-[#2B75D8]"
+                                                    }`}
                                                 />
+                                            )} {errors[field.name] && (
+                                                <p className="text-red-500 text-sm mt-1">
+                                                    {errors[field.name]}
+                                                </p>
                                             )}
                                         </div>
                                     ))}
-
                                 </div>
 
                                 {/* Navigation Buttons */}
@@ -3229,7 +3724,6 @@ export default function EnrollmentMain() {
                                             ["Subdivision / Barangay", formData.sitioStreet],
                                             ["Province", formData.province],
                                             ["Municipality / City", formData.municipalityCity],
-                                            ["Country", formData.country],
                                             ["Zip Code", formData.zipCode],
                                         ].map(([label, value]) => (
                                             <div key={label}>
@@ -3368,7 +3862,7 @@ export default function EnrollmentMain() {
                                 onClick={handleNext}
                                 className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] active:scale-[0.99] transition"
                             >
-                                Done
+                                Next
                                 <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
                                     <path
                                         d="M1 8H17M10 1L17 8L10 15"
@@ -3385,6 +3879,1024 @@ export default function EnrollmentMain() {
                     </div>
                 </main>
             )}
+
+            {/* ==============================
+                SCREEN 14: PART 6 UPLOADING DOCUMENT
+            ============================== */}
+
+            {currentStep === 14 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] min-h-[704px] px-5 sm:px-8 py-[26px] relative">
+
+                        {/* Page Heading */}
+                        <p className="text-[#2B75D8] font-inter text-base leading-6 mb-8">
+                            Uploading Document (You can still proceed with the enrollment without your personal document)
+                        </p>
+
+                        {/* Upload Container */}
+                        <div
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            className={`w-full max-w-[1121px] min-h-[321px] mx-auto rounded-[10px] border border-dashed flex flex-col items-center justify-center px-4 py-8 transition ${
+                                isDragging
+                                    ? "border-[#2B75D8] bg-blue-50"
+                                    : "border-[#2B75D8] bg-white"
+                            }`}
+                        >
+
+                            {/* Upload Icon */}
+                            <svg
+                                width="150"
+                                height="150"
+                                viewBox="0 0 150 166"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-[150px] h-[150px] mb-2"
+                            >
+                                <path
+                                    d="M75 0C62.6273 0.0387986 50.6764 4.50127 41.3063 12.5813C34.125 18.7688 28.9219 26.8312 27.5812 34.9219C11.8687 38.3906 0 52.0781 0 68.6062C0 87.8063 16.0125 103.125 35.4469 103.125H70.3125V53.5031L50.1938 73.6312C49.3136 74.5114 48.1198 75.0059 46.875 75.0059C45.6302 75.0059 44.4364 74.5114 43.5562 73.6312C42.6761 72.7511 42.1816 71.5573 42.1816 70.3125C42.1816 69.0677 42.6761 67.8739 43.5562 66.9938L71.6813 38.8687C72.1167 38.4322 72.6339 38.0859 73.2034 37.8496C73.7729 37.6133 74.3834 37.4916 75 37.4916C75.6166 37.4916 76.2271 37.6133 76.7966 37.8496C77.3661 38.0859 77.8833 38.4322 78.3187 38.8687L106.444 66.9938C107.324 67.8739 107.818 69.0677 107.818 70.3125C107.818 71.5573 107.324 72.7511 106.444 73.6312C105.564 74.5114 104.37 75.0059 103.125 75.0059C101.88 75.0059 100.686 74.5114 99.8063 73.6312L79.6875 53.5031V103.125H118.95C135.956 103.125 150 89.7188 150 72.8719C150 57.5344 138.356 45.0375 123.431 42.9281C121.153 18.7406 100.219 0 75 0ZM70.3125 135.938V103.125H79.6875V135.938C79.6875 137.181 79.1936 138.373 78.3146 139.252C77.4355 140.131 76.2432 140.625 75 140.625C73.7568 140.625 72.5645 140.131 71.6854 139.252C70.8064 138.373 70.3125 137.181 70.3125 135.938Z"
+                                    fill="#2B75D8"
+                                />
+                            </svg>
+
+                            <h2 className="text-black font-poppins text-xl sm:text-[25px] text-center">
+                                Drag and drop your file here
+                            </h2>
+
+                            <p className="text-black font-poppins text-sm sm:text-[17px] mt-1">
+                                or click to browse files
+                            </p>
+
+                            {/* File Browser */}
+                            <label className="mt-4 cursor-pointer rounded-[10px] bg-[#2B75D8] w-[150px] h-10 flex items-center justify-center gap-2 text-white font-poppins text-[15px] hover:bg-[#2164bd] transition">
+
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                >
+                                    <path
+                                        d="M22 19V9C22 8.46957 21.7893 7.96086 21.4142 7.58579C21.0391 7.21071 20.5304 7 20 7H13.236C12.8645 6.99999 12.5004 6.89651 12.1844 6.70116C11.8684 6.50581 11.6131 6.22631 11.447 5.894L10.553 4.106C10.3869 3.77353 10.1314 3.49394 9.8152 3.29858C9.49902 3.10322 9.13466 2.99983 8.763 3H4C3.46957 3 2.96086 3.21071 2.58579 3.58579C2.21071 3.96086 2 4.46957 2 5V19C2 19.5304 2.21071 20.0391 2.58579 20.4142C2.96086 20.7893 3.46957 21 4 21H20C20.5304 21 21.0391 20.7893 21.4142 20.4142C21.7893 20.0391 22 19.5304 22 19Z"
+                                        stroke="white"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+
+                                Choose File
+
+                                <input
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                    multiple
+                                    onChange={handleFileSelect}
+                                    className="hidden"
+                                />
+                            </label>
+
+                            <p className="text-black font-poppins text-[10px] mt-3 text-center">
+                                Supported formats: JPG, PNG ● Max File Size: 10MB per file
+                            </p>
+
+                        </div>
+
+                        {/* Uploaded Files */}
+                        {uploadedFiles.length > 0 && (
+                            <div className="max-w-[1121px] mx-auto mt-6">
+
+                                <h3 className="text-[#2B75D8] font-poppins text-base font-semibold mb-3">
+                                    Selected Documents ({uploadedFiles.length})
+                                </h3>
+
+                                <div className="space-y-3">
+
+                                    {uploadedFiles.map((file, index) => (
+                                        <div
+                                            key={`${file.name}-${file.lastModified}-${index}`}
+                                            className="flex items-center justify-between gap-3 border border-gray-200 rounded-lg p-3"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-poppins text-gray-800 break-all">
+                                                    {file.name}
+                                                </p>
+
+                                                <p className="text-xs text-gray-500">
+                                                    {(file.size / (1024 * 1024)).toFixed(2)} MB
+                                                </p>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => removeUploadedFile(index)}
+                                                className="text-red-500 hover:text-red-700 text-sm font-poppins shrink-0"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Status Message */}
+                        {status && (
+                            <p
+                                role="alert"
+                                className="text-red-500 text-sm text-center mt-4 font-poppins"
+                            >
+                                {status}
+                            </p>
+                        )}
+
+                        {/* Required Documents */}
+                        <p className="text-[#2B75D8] font-poppins text-base sm:text-xl text-center mt-8">
+                            PSA Birth Certificate, Report Card SF9, ID Picture
+                        </p>
+
+                        {/* Navigation */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-[26px] mt-8">
+
+                            <button
+                                type="button"
+                                onClick={handleBack}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-blue-50 transition"
+                            >
+                                <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                    <path
+                                        d="M17 8H1M8 1L1 8L8 15"
+                                        stroke="#2B75D8"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                                Back
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleNext}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] flex items-center justify-center gap-3 hover:bg-[#2164bd] transition"
+                            >
+                                Next
+
+                                <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+                                    <path
+                                        d="M1 8H17M10 1L17 8L10 15"
+                                        stroke="white"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </button>
+
+                        </div>
+
+                    </div>
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 15: JUNIOR HIGH SCHOOL ENROLLMENT
+            ============================== */}
+
+            {currentStep === 15 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1366px] px-5 sm:px-10 py-8">
+
+                        {/* PAGE HEADER */}
+                        <div className="mb-8">
+                            <p className="text-[#2B75D8] font-poppins text-sm font-medium mb-2">
+                                JUNIOR HIGH SCHOOL
+                            </p>
+
+                            <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold">
+                                Enrollment Information
+                            </h1>
+
+                            <p className="text-gray-500 font-poppins text-sm mt-2">
+                                Review your assigned section, prescribed subjects,
+                                and class schedule.
+                            </p>
+                        </div>
+
+                        {/* STUDENT INFORMATION */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <h2 className="text-gray-800 font-poppins font-semibold text-lg mb-5">
+                                Student Information
+                            </h2>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Learner Reference Number
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        {formData.lrn || "Not provided"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Student Name
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        {[
+                                            formData.firstName,
+                                            formData.middleName,
+                                            formData.lastName,
+                                            formData.extensionName,
+                                        ].filter(Boolean).join(" ") || "Not provided"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Grade Level
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        Grade {formData.gradeLevel}
+                                    </p>
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                        {/* SECTION ASSIGNMENT */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+
+                                <div>
+                                    <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                        Section Assignment
+                                    </h2>
+
+                                    <p className="text-gray-500 font-poppins text-sm mt-1">
+                                        Your section is automatically assigned based
+                                        on available section population.
+                                    </p>
+                                </div>
+
+                                <span className="self-start bg-blue-50 text-[#2B75D8] rounded-full px-4 py-2 text-xs font-poppins font-semibold">
+                                    Automatically Assigned
+                                </span>
+
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                                <div className="bg-blue-50 rounded-lg p-5">
+
+                                    <p className="text-gray-500 font-poppins text-sm mb-2">
+                                        Assigned Section
+                                    </p>
+
+                                    <h3 className="text-[#2B75D8] text-2xl font-poppins font-bold">
+                                        {assignedJhsSection?.name || "No section assigned"}
+                                    </h3>
+
+                                </div>
+
+                                <div className="bg-gray-50 rounded-lg p-5">
+
+                                    <p className="text-gray-500 font-poppins text-sm mb-2">
+                                        Section Adviser
+                                    </p>
+
+                                    <h3 className="text-gray-800 text-lg font-poppins font-semibold">
+                                        {assignedJhsSection?.adviser || "Unassigned"}
+                                    </h3>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                        {/* PRESCRIBED SUBJECTS */}
+                        <section className="mb-8">
+
+                            <div className="mb-4">
+                                <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                    Prescribed Subjects
+                                </h2>
+
+                                <p className="text-gray-500 font-poppins text-sm mt-1">
+                                    Learning areas assigned to Grade {formData.gradeLevel}.
+                                </p>
+                            </div>
+
+                            <div className="overflow-x-auto border border-gray-200 rounded-xl">
+
+                                <table className="w-full min-w-[650px] text-left">
+
+                                    <thead className="bg-blue-50">
+                                        <tr>
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                No.
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Subject / Learning Area
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Subject Teacher
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {jhsSubjects.map((subject, index) => (
+                                            <tr
+                                                key={subject.id}
+                                                className="border-t border-gray-100 hover:bg-gray-50 transition"
+                                            >
+                                                <td className="px-5 py-4 text-gray-600 font-poppins text-sm">
+                                                    {index + 1}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-800 font-poppins text-sm font-medium">
+                                                    {subject.name}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-500 font-poppins text-sm">
+                                                    {subject.teacher}
+                                                </td>
+                                            </tr>
+                                        ))}
+
+                                        {jhsSubjects.length === 0 && (
+                                            <tr>
+                                                <td
+                                                    colSpan="3"
+                                                    className="px-5 py-8 text-center text-gray-500 font-poppins text-sm"
+                                                >
+                                                    No subjects available for this grade level.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </section>
+
+                        {/* CLASS SCHEDULE */}
+                        <section className="mb-8">
+
+                            <div className="mb-4">
+                                <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                    Class Schedule
+                                </h2>
+                            </div>
+
+                            <div className="overflow-x-auto border border-gray-200 rounded-xl">
+
+                                <table className="w-full min-w-[650px] text-left">
+
+                                    <thead className="bg-blue-50">
+                                        <tr>
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Subject
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Day
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Time
+                                            </th>
+
+                                            <th className="px-5 py-4 text-[#2B75D8] font-poppins text-sm font-semibold">
+                                                Teacher
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {jhsSubjects.map((subject) => (
+                                            <tr
+                                                key={subject.id}
+                                                className="border-t border-gray-100 hover:bg-gray-50 transition"
+                                            >
+                                                <td className="px-5 py-4 text-gray-800 font-poppins text-sm font-medium">
+                                                    {subject.name}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-600 font-poppins text-sm">
+                                                    {subject.day}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-600 font-poppins text-sm">
+                                                    {subject.time}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-gray-500 font-poppins text-sm">
+                                                    {subject.teacher}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </section>
+
+                        {/* INFORMATION NOTE */}
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-8">
+
+                            <p className="text-[#2B75D8] font-poppins font-semibold text-sm mb-1">
+                                Important Information
+                            </p>
+
+                            <p className="text-gray-600 font-poppins text-sm leading-6">
+                                Your assigned section and learning areas are displayed
+                                for enrollment reference. Subject teachers and official
+                                class schedules may still be updated by the school
+                                administration.
+                            </p>
+
+                        </div>
+
+                        {/* NAVIGATION */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+
+                            <button
+                                type="button"
+                                onClick={handleBack}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] hover:bg-blue-50 transition"
+                            >
+                                Back
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleNext}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] hover:bg-[#2164bd] transition"
+                            >
+                                Continue
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </main>
+            )}
+
+            {/* ==============================
+                SCREEN 16: SENIOR HIGH SCHOOL ENROLLMENT
+            ============================== */}
+
+            {currentStep === 16 && (
+                <main className="relative z-10 flex justify-center px-4 pt-[21px] pb-12">
+
+                    <div className="bg-white rounded-[10px] w-full max-w-[1100px] px-5 sm:px-10 py-8">
+
+                        {/* HEADER */}
+                        <div className="mb-8">
+                            <p className="text-[#2B75D8] font-poppins text-sm font-medium mb-2">
+                                SENIOR HIGH SCHOOL
+                            </p>
+
+                            <h1 className="text-[#2B75D8] font-poppins text-xl sm:text-[28px] font-semibold">
+                                Enrollment Information
+                            </h1>
+
+                            <p className="text-gray-500 font-poppins text-sm mt-2">
+                                Strengthened Senior High School Curriculum
+                                {" "}· School Year 2026–2027
+                            </p>
+                        </div>
+
+                        {/* STUDENT INFORMATION */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <h2 className="text-gray-800 font-poppins font-semibold text-lg mb-5">
+                                Student Information
+                            </h2>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Learner Reference Number
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        {formData.lrn || "Not provided"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Student Name
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        {[
+                                            formData.firstName,
+                                            formData.middleName,
+                                            formData.lastName,
+                                            formData.extensionName,
+                                        ].filter(Boolean).join(" ") || "Not provided"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500 text-xs font-poppins mb-1">
+                                        Grade Level
+                                    </p>
+                                    <p className="text-gray-800 font-poppins font-medium">
+                                        Grade {formData.gradeLevel}
+                                    </p>
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                        {/* CORE SUBJECTS */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                        Core Subjects
+                                    </h2>
+                                    <p className="text-gray-500 font-poppins text-sm mt-1">
+                                        These subjects are automatically included.
+                                    </p>
+                                </div>
+
+                                <span className="bg-blue-50 text-[#2B75D8] rounded-full px-3 py-2 text-xs font-poppins font-semibold">
+                                    6 Subjects
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {shsEnrollmentData.coreSubjects.map((subject, index) => (
+                                    <div
+                                        key={subject}
+                                        className="flex items-center gap-3 bg-gray-50 rounded-lg p-3"
+                                    >
+                                        <span className="w-7 h-7 shrink-0 rounded-full bg-blue-100 text-[#2B75D8] flex items-center justify-center text-xs font-semibold">
+                                            {index + 1}
+                                        </span>
+
+                                        <span className="text-gray-700 font-poppins text-sm">
+                                            {subject}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                        </section>
+
+                        {/* TRACK SELECTION */}
+                        <section className="mb-7">
+
+                            <h2 className="text-gray-800 font-poppins font-semibold text-lg mb-2">
+                                Select Your SHS Track
+                            </h2>
+
+                            <p className="text-gray-500 font-poppins text-sm mb-5">
+                                Choose a track to explore its available elective clusters.
+                                You can select electives from both tracks.
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                                {/* ACADEMIC TRACK */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleShsTrackChange("academic")}
+                                    className="text-left border-2 border-gray-200 rounded-xl p-5 transition hover:border-[#2B75D8] hover:bg-blue-50"
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-gray-800 font-poppins font-semibold text-lg">
+                                            Academic Track
+                                        </h3>
+
+                                        <span className={` ${
+                                            formData.shsTrack === "academic"
+                                                ? "border-[#2B75D8]"
+                                                : "border-gray-300"
+                                        }`}>
+                                            {formData.shsTrack === "academic" && (
+                                                <span className="w-2.5 h-2.5 rounded-full bg-[#2B75D8]" />
+                                            )}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-gray-500 font-poppins text-sm">
+                                        Focuses on academic learning through
+                                        different subject clusters.
+                                    </p>
+                                </button>
+
+                                {/* TECH-PRO TRACK */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleShsTrackChange("techPro")}
+                                    className="text-left border-2 border-gray-200 rounded-xl p-5 transition hover:border-[#2B75D8] hover:bg-blue-50"
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-gray-800 font-poppins font-semibold text-lg">
+                                            Technical-Professional Track
+                                        </h3>
+
+                                        <span className={`${
+                                            formData.shsTrack === "techPro"
+                                                ? "border-[#2B75D8]"
+                                                : "border-gray-300"
+                                        }`}>
+                                            {formData.shsTrack === "techPro" && (
+                                                <span className="w-2.5 h-2.5 rounded-full bg-[#2B75D8]" />
+                                            )}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-gray-500 font-poppins text-sm">
+                                        Focuses on technical and professional
+                                        subject clusters.
+                                    </p>
+                                </button>
+
+                            </div>
+                        </section>
+
+                        {/* ELECTIVE SELECTION */}
+                        <section className="border border-gray-200 rounded-xl p-5 mb-7">
+
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                                <div>
+                                    <h2 className="text-gray-800 font-poppins font-semibold text-lg">
+                                        Elective Subjects
+                                    </h2>
+
+                                    <p className="text-gray-500 font-poppins text-sm mt-1">
+                                        Select at least 2 electives from your preferred subject clusters.
+                                    </p>
+                                </div>
+
+                                <span className="bg-blue-50 text-[#2B75D8] rounded-full px-4 py-2 text-xs font-poppins font-semibold self-start">
+                                    {formData.shsSelectedElectives.length} Selected
+                                </span>
+
+                            </div>
+
+                            {/* SELECTED ELECTIVES SUMMARY */}
+                            {formData.shsSelectedElectives.length > 0 && (
+                                <div className="mt-6 space-y-4">
+
+                                    {getSelectedShsClusters().map((cluster) => {
+
+                                        const clusterSelections =
+                                            formData.shsSelectedElectives.filter(
+                                                (item) => item.clusterId === cluster.id
+                                            );
+
+                                        if (clusterSelections.length === 0) return null;
+
+                                        return (
+                                            <div
+                                                key={cluster.id}
+                                                className="border border-gray-200 rounded-lg p-4"
+                                            >
+
+                                                {/* TRACK NAME */}
+                                                <p className="text-gray-400 font-poppins text-xs mb-1">
+                                                    {cluster.trackName}
+                                                </p>
+
+                                                {/* CLUSTER NAME */}
+                                                <h3 className="text-[#2B75D8] font-poppins font-semibold text-sm mb-3">
+                                                    {cluster.name}
+                                                </h3>
+
+                                                {/* SELECTED SUBJECTS */}
+                                                <div className="space-y-2">
+
+                                                    {clusterSelections.map((item) => (
+                                                        <div
+                                                            key={`${item.clusterId}-${item.subject}`}
+                                                            className="flex items-center justify-between gap-3"
+                                                        >
+
+                                                            <span className="text-gray-700 text-sm font-poppins">
+                                                                {item.subject}
+                                                            </span>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    toggleShsElective(
+                                                                        item.clusterId,
+                                                                        item.subject
+                                                                    )
+                                                                }
+                                                                className="text-red-500 text-xs font-poppins hover:underline shrink-0"
+                                                            >
+                                                                Remove
+                                                            </button>
+
+                                                        </div>
+                                                    ))}
+
+                                                </div>
+
+                                            </div>
+                                        );
+                                    })}
+
+                                </div>
+                            )}
+
+                            {errors.shsSelectedElectives && (
+                                <p className="text-red-500 text-sm font-poppins mt-3">
+                                    {errors.shsSelectedElectives}
+                                </p>
+                            )}
+
+                            <div className="bg-blue-50 rounded-lg p-4 mt-5">
+                                <p className="text-[#2B75D8] font-poppins text-sm font-semibold mb-1">
+                                    Selection Requirements
+                                </p>
+
+                                <p className="text-gray-600 font-poppins text-xs leading-5">
+                                    Select at least 2 elective subjects. You may combine subjects
+                                    from Academic and Technical-Professional tracks or choose
+                                    all your electives from the same track.
+                                </p>
+                            </div>
+
+                        </section>
+
+                        {/* NAVIGATION */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+
+                            <button
+                                type="button"
+                                onClick={handleBack}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] border border-[#2B75D8] bg-white text-[#2B75D8] font-poppins text-[15px] hover:bg-blue-50 transition"
+                            >
+                                Back
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleNext}
+                                className="w-full sm:w-[250px] h-[50px] rounded-[15px] bg-[#2B75D8] text-white font-poppins text-[15px] hover:bg-[#2164bd] transition"
+                            >
+                                Continue
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </main>
+            )}
+
+            {/* ==============================
+                SHS ELECTIVE SELECTION MODAL
+            ============================== */}
+
+            {currentStep === 16 && isShsModalOpen && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-3 py-5 sm:px-6"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setIsShsModalOpen(false);
+                        }
+                    }}
+                >
+
+                    <div
+                        className="bg-white w-full max-w-[900px] max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="shs-modal-title"
+                    >
+
+                        {/* MODAL HEADER */}
+                        <div className="flex items-center justify-between gap-4 p-5 sm:p-6 border-b border-gray-200">
+
+                            <div>
+                                <h2
+                                    id="shs-modal-title"
+                                    className="text-[#2B75D8] font-poppins font-semibold text-lg sm:text-xl"
+                                >
+                                    Select Elective Subjects
+                                </h2>
+
+                                <p className="text-gray-500 font-poppins text-xs sm:text-sm mt-1">
+                                    Choose subjects from different clusters.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setIsShsModalOpen(false)}
+                                className="w-9 h-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 text-xl"
+                                aria-label="Close elective selection"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                        {/* MODAL CONTENT */}
+                        <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
+
+                            {/* CLUSTER NAVIGATION */}
+                            <aside className="md:w-[260px] shrink-0 bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200 p-4">
+
+                                <p className="text-gray-500 text-xs font-poppins font-semibold uppercase mb-3">
+                                    Available Clusters
+                                </p>
+
+                                <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-1">
+
+                                    {getSelectedShsClusters()
+                                        .filter((cluster) => cluster.trackId === activeShsTrack)
+                                        .map((cluster) => {
+                                        const count =
+                                            formData.shsSelectedElectives.filter(
+                                                (item) => item.clusterId === cluster.id
+                                            ).length;
+
+                                        return (
+                                            <button
+                                                key={cluster.id}
+                                                type="button"
+                                                onClick={() =>
+                                                    setActiveShsCluster(cluster.id)
+                                                }
+                                                className={`shrink-0 md:w-full text-left rounded-lg p-3 transition ${
+                                                    activeShsCluster === cluster.id
+                                                        ? "bg-[#2B75D8] text-white"
+                                                        : "bg-white text-gray-700 border border-gray-200 hover:border-blue-300"
+                                                }`}
+                                            >
+                                                <span className="block text-[10px] font-poppins opacity-75 mb-1">
+                                                    {cluster.trackName}
+                                                </span>
+
+                                                <span className="block text-xs sm:text-sm font-poppins font-semibold">
+                                                    {cluster.name}
+                                                </span>
+
+                                                <span className={`block text-[11px] font-poppins mt-1 ${
+                                                    activeShsCluster === cluster.id
+                                                        ? "text-blue-100"
+                                                        : "text-gray-400"
+                                                }`}>
+                                                    {count} selected
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+
+                                </div>
+
+                            </aside>
+
+                            {/* SUBJECT LIST */}
+                            <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6">
+
+                                    {getSelectedShsClusters()
+                                        .filter(
+                                            (cluster) =>
+                                                cluster.trackId === activeShsTrack &&
+                                                cluster.id === activeShsCluster
+                                        )
+                                        .map((cluster) => (
+                                        <div key={cluster.id}>
+
+                                            <div className="mb-5">
+                                                <h3 className="text-gray-800 font-poppins font-semibold text-lg">
+                                                    {cluster.name}
+                                                </h3>
+
+                                                <p className="text-gray-500 font-poppins text-xs mt-1">
+                                                    Select all the subjects you want from this cluster.
+                                                </p>
+                                            </div>
+
+                                            <div className="space-y-2">
+
+                                                {cluster.electives.map((subject) => {
+                                                    const selected =
+                                                        isShsElectiveSelected(
+                                                            cluster.id,
+                                                            subject
+                                                        );
+
+                                                    return (
+                                                        <label
+                                                            key={subject}
+                                                            className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition ${
+                                                                selected
+                                                                    ? "border-[#2B75D8] bg-blue-50"
+                                                                    : "border-gray-200 hover:bg-gray-50"
+                                                            }`}
+                                                        >
+
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selected}
+                                                                onChange={() =>
+                                                                    toggleShsElective(
+                                                                        cluster.id,
+                                                                        subject
+                                                                    )
+                                                                }
+                                                                className="w-4 h-4 mt-1 accent-[#2B75D8] shrink-0"
+                                                            />
+
+                                                            <span className="text-gray-700 font-poppins text-sm">
+                                                                {subject}
+                                                            </span>
+
+                                                        </label>
+                                                    );
+                                                })}
+
+                                            </div>
+
+                                        </div>
+                                    ))}
+
+                            </div>
+
+                        </div>
+
+                        {/* MODAL FOOTER */}
+                        <div className="border-t border-gray-200 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                            <div>
+                                <p className="text-gray-800 font-poppins font-semibold text-sm">
+                                    {formData.shsSelectedElectives.length} electives selected
+                                </p>
+
+                                <p className="text-gray-500 font-poppins text-xs mt-1">
+                                    You can combine electives from different tracks.
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3">
+
+                                <button
+                                    type="button"
+                                    onClick={() => setIsShsModalOpen(false)}
+                                    className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-poppins text-sm hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={formData.shsSelectedElectives.length < 2}
+                                    onClick={() => {
+                                        setIsShsModalOpen(false);
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            shsSelectedElectives: "",
+                                        }));
+                                    }}
+                                    className="px-5 py-2.5 rounded-lg bg-[#2B75D8] text-white font-poppins text-sm font-semibold hover:bg-[#2164bd] disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+                                >
+                                    Confirm Electives
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
+
+
         </div>
     );
 }
