@@ -31,30 +31,34 @@ export default function EnrollRegis() {
         setSubmitted(false);
     };
 
+    
     const validateForm = () => {
         const newErrors = {};
 
-        if (!formData.email.trim()) {
-        newErrors.email = "Email is required.";
-        } else if (
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-        ) {
-        newErrors.email = "Please enter a valid email address.";
-        }
+        const email = formData.email.trim();
+        const phone = formData.phone.trim().replace(/[\s-]/g, "");
 
-        const phone = formData.phone.replace(/[\s-]/g, "");
+        // At least one contact method is required
+        if (!email && !phone) {
+            newErrors.email = "Please provide either an email address or phone number.";
+            newErrors.phone = "Please provide either an email address or phone number.";
+        } else {
+            // Validate email only if provided
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                newErrors.email = "Please enter a valid email address.";
+            }
 
-        if (!phone) {
-        newErrors.phone = "Phone number is required.";
-        } else if (!/^(\+63|0)9\d{9}$/.test(phone)) {
-        newErrors.phone =
-            "Enter a valid Philippine mobile number.";
+            // Validate phone only if provided
+            if (phone && !/^(\+63|0)9\d{9}$/.test(phone)) {
+                newErrors.phone = "Enter a valid Philippine mobile number.";
+            }
         }
 
         setErrors(newErrors);
 
         return Object.keys(newErrors).length === 0;
     };
+
 
     const navigate = useNavigate();
 
@@ -187,6 +191,9 @@ export default function EnrollRegis() {
                         >
                             Next
                         </button>
+                        <p className="text-center text-gray-500 text-sm font-poppins">
+                            Please provide at least one contact method: email address or phone number.
+                        </p>
 
                         {submitted && (
                             <p
